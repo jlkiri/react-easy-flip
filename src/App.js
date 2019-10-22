@@ -1,24 +1,65 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect, useRef } from "react";
+import useFlip from "./hooks/useFlip";
+import "./App.css";
+
+const shuffle = function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
+const itemCollection = [
+  { id: 1, text: "This is random string number 1" },
+  { id: 2, text: "This is random string number 2" },
+  { id: 3, text: "This is random string number 3" },
+  { id: 4, text: "This is random string number 4" },
+  { id: 5, text: "This is random string number 5" },
+  { id: 6, text: "This is random string number 6" },
+  { id: 7, text: "This is random string number 7" },
+  { id: 8, text: "This is random string number 8" },
+  { id: 9, text: "This is random string number 9" },
+  { id: 10, text: "This is random string number 10" }
+];
 
 function App() {
+  const [items, setItems] = useState(itemCollection);
+  const rootRef = useRef();
+
+  useFlip({ root: rootRef, opts: { transition: 700 }, deps: items });
+
+  useEffect(() => {
+    console.log(items.map(item => item.id));
+  }, [items]);
+
+  const shuffleItems = function shuffleItems() {
+    const result = shuffle([...items]);
+    setItems(result);
+  };
+
+  const sortItems = function sortItems() {
+    const result = [...items].sort((a, b) => a.id - b.id);
+    setItems(result);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      <div ref={rootRef} className="root">
+        {items.map(item => {
+          return (
+            <div className="item" data-id={item.id} key={item.id}>
+              {item.text}
+            </div>
+          );
+        })}
+      </div>
+      <button className="shuffle" onClick={shuffleItems}>
+        Shuffle
+      </button>
+      <button className="shuffle" onClick={sortItems}>
+        Sort
+      </button>
     </div>
   );
 }
