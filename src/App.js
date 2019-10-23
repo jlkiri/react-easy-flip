@@ -19,8 +19,7 @@ const itemCollection = [
   { id: 6, text: "This is random string number 6" },
   { id: 7, text: "This is random string number 7" },
   { id: 8, text: "This is random string number 8" },
-  { id: 9, text: "This is random string number 9" },
-  { id: 10, text: "This is random string number 10" }
+  { id: 9, text: "This is random string number 9" }
 ];
 
 function App() {
@@ -29,17 +28,15 @@ function App() {
 
   useFlip({ root: rootRef, opts: { transition: 700 }, deps: items });
 
-  useEffect(() => {
-    console.log(items.map(item => item.id));
-  }, [items]);
-
   const shuffleItems = function shuffleItems() {
     const result = shuffle([...items]);
+    console.log(result);
     setItems(result);
   };
 
   const sortItems = function sortItems() {
     const result = [...items].sort((a, b) => a.id - b.id);
+    console.log(result);
     setItems(result);
   };
 
@@ -48,18 +45,20 @@ function App() {
       <div ref={rootRef} className="root">
         {items.map(item => {
           return (
-            <div className="item" data-id={item.id} key={item.id}>
+            <div className={"item"} data-id={item.id} key={item.id}>
               {item.text}
             </div>
           );
         })}
       </div>
-      <button className="shuffle" onClick={shuffleItems}>
-        Shuffle
-      </button>
-      <button className="shuffle" onClick={sortItems}>
-        Sort
-      </button>
+      <div className="buttons">
+        <button className="shuffle" onClick={shuffleItems}>
+          Shuffle
+        </button>
+        <button className="shuffle" onClick={sortItems}>
+          Sort
+        </button>
+      </div>
     </div>
   );
 }

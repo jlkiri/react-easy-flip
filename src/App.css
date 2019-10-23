@@ -11,15 +11,23 @@
   position: relative;
   padding: 10px;
   font-size: 13px;
-  border: 1px solid rgb(53, 53, 53);
   border-radius: 2px;
   background-color: rgb(221, 52, 52);
   color: white;
   box-shadow: 0 2px 2px 0px black;
 }
 
+.first {
+  background-color: black;
+}
+
 .item:not(:first-child) {
   margin-top: 10px;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
 }
 
 .shuffle {
@@ -31,6 +39,10 @@
   color: white;
   padding: 10px 25px;
   cursor: pointer;
+}
+
+.shuffle:not(:first-child) {
+  margin-top: 15px;
 }
 
 .shuffle:hover {

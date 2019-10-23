@@ -13,27 +13,6 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
   const transition = opts.transition || 500;
 
-  function onCancel(elem, cb) {
-    return function() {
-      cb();
-      console.log("canceled");
-      elem.removeEventListener("transitioncancel", onCancel);
-    };
-  }
-
-  const registerAnimation = function registerAnimation(elem) {
-    const key = elem.dataset.id;
-    const elemInfo = domRefs.current.refs[key];
-    const cb = () => (elemInfo.inFlight = false);
-    elem.addEventListener("transitionend", function onTransitionEnd() {
-      cb();
-      console.log("finished");
-      elem.removeEventListener("transitionend", onTransitionEnd);
-    });
-
-    elem.addEventListener("transitioncancel", onCancel(elem, cb));
-  };
-
   const play = function play(elem) {
     elem.style.transform = ``;
     elem.style.transition = `transform ${transition}ms`;
@@ -41,12 +20,6 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
   const invert = function invert(elem) {
     return function _invert({ dx, dy }) {
-      const key = elem.dataset.id;
-      const elemInfo = domRefs.current.refs[key];
-
-      //if (!elemInfo.inFlight) registerAnimation(elem);
-
-      //elemInfo.inFlight = true;
       elem.style.transform = `translate(${dx}px, ${dy}px)`;
       elem.style.transition = `transform 0s`;
     };
@@ -59,7 +32,7 @@ export default function useFlipAnimation({ root, opts, deps }) {
       const children = root.current.children;
       for (let child of children) {
         const key = child.dataset.id;
-        domRefs.current.refs[key].rect = child.getBoundingClientRect();
+        domRefs.current.refs[key] = child.getBoundingClientRect();
       }
     });
 
@@ -67,24 +40,6 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
     return () => window.removeEventListener("resize", onResize);
   }, [root]);
-
-  useEffect(() => {
-    // This runs after useLayoutEffect, which allows us to save
-    // "previous" positions before next useLayoutEffect runs
-    if (!root) return;
-
-    const children = root.current.children;
-
-    for (let child of children) {
-      const key = child.dataset.id;
-      if (!domRefs.current.refs[key]) {
-        console.log("no key");
-        domRefs.current.refs[key] = Object.create(null);
-      }
-      const childInfo = domRefs.current.refs[key];
-      childInfo.rect = child.getBoundingClientRect();
-    }
-  }, [...deps, root]);
 
   useLayoutEffect(() => {
     if (!root) return;
@@ -99,21 +54,14 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
     requestAnimationFrame(() => {
       for (let child of children) {
-        if (child.dataset.id in domRefCopy) {
-          //child.removeEventListener("transitioncancel", onCancel);
+        const key = child.dataset.id;
 
-          const coords = domRefCopy[child.dataset.id];
+        if (key in domRefCopy) {
+          const coords = domRefCopy[key];
 
-          let prevX = coords.rect.left;
-          let prevY = coords.rect.top;
-
-          /*if (domRefs.current.refs[child.dataset.id].inFlight) {
-            console.log("inFlight");
-            prevX = child.getBoundingClientRect().left;
-            prevY = child.getBoundingClientRect().top;
-            child.style.transition = "";
-            child.style.transform = "";
-          }*/
+          // Calculate delta of old and new DOM positions for transform
+          let prevX = coords.left;
+          let prevY = coords.top;
 
           const nextX = child.getBoundingClientRect().left;
           const nextY = child.getBoundingClientRect().top;
@@ -125,7 +73,10 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
           requestAnimationFrame(() => play(child));
         }
+
+        // Save new DOM positions
+        domRefs.current.refs[key] = child.getBoundingClientRect();
       }
     });
-  }, [...deps, root]);
+  }, [deps, root]);
 }
