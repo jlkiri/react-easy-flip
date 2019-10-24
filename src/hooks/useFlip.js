@@ -48,16 +48,12 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
     if (children.length < 1) return;
 
-    // Avoid keeping reference to current because it
-    // updates faster than animations are done
-    const domRefCopy = domRefs.current.refs;
-
     requestAnimationFrame(() => {
       for (let child of children) {
         const key = child.dataset.id;
 
-        if (key in domRefCopy) {
-          const coords = domRefCopy[key];
+        if (key in domRefs.current.refs) {
+          const coords = domRefs.current.refs[key];
 
           // Calculate delta of old and new DOM positions for transform
           let prevX = coords.left;
