@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import useFlip from "./hooks/useFlip";
 import "./App.css";
 
@@ -30,13 +30,11 @@ function App() {
 
   const shuffleItems = function shuffleItems() {
     const result = shuffle([...items]);
-    console.log(result);
     setItems(result);
   };
 
   const sortItems = function sortItems() {
     const result = [...items].sort((a, b) => a.id - b.id);
-    console.log(result);
     setItems(result);
   };
 

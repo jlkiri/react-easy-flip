@@ -50,7 +50,7 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
     // Avoid keeping reference to current because it
     // updates faster than animations are done
-    const domRefCopy = { ...domRefs.current.refs };
+    const domRefCopy = domRefs.current.refs;
 
     requestAnimationFrame(() => {
       for (let child of children) {
