@@ -28,6 +28,8 @@ function App() {
 
   useFlip({ root: rootRef, opts: { transition: 700 }, deps: items });
 
+  console.log(items);
+
   const shuffleItems = function shuffleItems() {
     const result = shuffle([...items]);
     setItems(result);
