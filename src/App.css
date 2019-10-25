@@ -1,48 +1,60 @@
 .container {
   position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
   width: 100vw;
 }
 
-.item {
+.vroot {
+  margin-top: 15px;
+}
+
+.hroot {
+  margin-top: 15px;
+}
+
+.hitem {
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  text-align: center;
+  border-radius: 3px;
+  background-color: rgba(255, 224, 229, 0.377);
+}
+
+.hitem:not(:first-child) {
+  margin-left: 5px;
+}
+
+.vitem {
   position: relative;
   padding: 10px;
   font-size: 13px;
-  border-radius: 2px;
-  background-color: rgb(221, 52, 52);
-  color: white;
-  box-shadow: 0 2px 2px 0px black;
+  border-radius: 3px;
+  background-color: rgb(163, 96, 194);
+  color: rgb(255, 255, 255);
+  box-shadow: 0 1px 1px 0px black;
 }
 
-.first {
-  background-color: black;
-}
-
-.item:not(:first-child) {
+.vitem:not(:first-child) {
   margin-top: 10px;
 }
 
-.buttons {
-  display: flex;
-  flex-direction: column;
-}
-
 .shuffle {
-  margin-left: 35px;
-  border-radius: 2px;
+  border-radius: 3px;
   border: none;
   transition: 300ms;
-  background-color: rgb(248, 90, 17);
+  background-color: rgba(248, 90, 17, 0.685);
   color: white;
   padding: 10px 25px;
   cursor: pointer;
 }
 
 .shuffle:not(:first-child) {
-  margin-top: 15px;
+  margin-left: 15px;
 }
 
 .shuffle:hover {

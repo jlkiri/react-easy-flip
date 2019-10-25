@@ -25,8 +25,10 @@ const itemCollection = [
 function App() {
   const [items, setItems] = useState(itemCollection);
   const rootRef = useRef();
+  const horizontalRef = useRef();
 
   useFlip({ root: rootRef, opts: { transition: 700 }, deps: items });
+  useFlip({ root: horizontalRef, opts: { transition: 700 }, deps: items });
 
   console.log(items);
 
@@ -42,22 +44,31 @@ function App() {
 
   return (
     <div className="container">
-      <div ref={rootRef} className="root">
-        {items.map(item => {
-          return (
-            <div className={"item"} data-id={item.id} key={item.id}>
-              {item.text}
-            </div>
-          );
-        })}
-      </div>
-      <div className="buttons">
+      <section>
         <button className="shuffle" onClick={shuffleItems}>
           Shuffle
         </button>
         <button className="shuffle" onClick={sortItems}>
           Sort
         </button>
+      </section>
+      <div ref={rootRef} className="vroot">
+        {items.map(item => {
+          return (
+            <div className={"vitem"} data-id={item.id} key={item.id}>
+              {item.text}
+            </div>
+          );
+        })}
+      </div>
+      <div ref={horizontalRef} className="hroot">
+        {items.map(item => {
+          return (
+            <div className={"hitem"} data-id={item.id} key={item.id}>
+              {item.id}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
