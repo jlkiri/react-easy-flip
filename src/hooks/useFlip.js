@@ -12,6 +12,8 @@ export default function useFlipAnimation({ root, opts, deps }) {
   const childCoords = useRef({ refs: Object.create(null) });
 
   const transition = opts.transition || 500;
+  const delay = opts.delay || 0;
+  const easing = opts.easing || "ease";
 
   const onTransitionEnd = useCallback(function onTransitionEnd(e) {
     const targetKey = e.target.dataset.id;
@@ -29,7 +31,7 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
   useEffect(() => {
     const onResize = debounce(() => {
-      if (!root) return;
+      if (!root.current) return;
 
       const children = root.current.children;
       for (let child of children) {
@@ -41,12 +43,14 @@ export default function useFlipAnimation({ root, opts, deps }) {
     window.addEventListener("resize", onResize);
 
     return () => window.removeEventListener("resize", onResize);
-  }, [root]);
+  }, [root.current]);
 
   useLayoutEffect(() => {
+    if (!root.current) return;
+
     const play = function play(elem) {
       elem.style.transform = ``;
-      elem.style.transition = `transform ${transition}ms`;
+      elem.style.transition = `transform ${transition}ms ${easing} ${delay}ms`;
       elem.inFlight = true;
 
       // Update saved DOM position on transition end to prevent
@@ -101,5 +105,5 @@ export default function useFlipAnimation({ root, opts, deps }) {
         childCoords.current.refs[key] = child.getBoundingClientRect();
       }
     }
-  }, [deps, transition, root]);
+  }, [deps, transition, root.current]);
 }
