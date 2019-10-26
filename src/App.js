@@ -24,13 +24,11 @@ const itemCollection = [
 
 function App() {
   const [items, setItems] = useState(itemCollection);
-  const rootRef = useRef();
+  const verticalRef = useRef();
   const horizontalRef = useRef();
 
-  useFlip({ root: rootRef, opts: { transition: 700 }, deps: items });
+  useFlip({ root: verticalRef, opts: { transition: 700 }, deps: items });
   useFlip({ root: horizontalRef, opts: { transition: 700 }, deps: items });
-
-  console.log(items);
 
   const shuffleItems = function shuffleItems() {
     const result = shuffle([...items]);
@@ -52,7 +50,7 @@ function App() {
           Sort
         </button>
       </section>
-      <div ref={rootRef} className="vroot">
+      <div ref={verticalRef} className="vroot">
         {items.map(item => {
           return (
             <div className={"vitem"} data-id={item.id} key={item.id}>

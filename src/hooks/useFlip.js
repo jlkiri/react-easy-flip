@@ -18,15 +18,12 @@ export default function useFlipAnimation({ root, opts, deps }) {
   const onTransitionEnd = useCallback(function onTransitionEnd(e) {
     const targetKey = e.target.dataset.id;
     childCoords.current.refs[targetKey] = e.target.getBoundingClientRect();
-    e.target.inFlight = false;
-    e.target.removeEventListener("transitioncancel", onTransitionCancel);
-    e.target.removeEventListener("transitionend", onTransitionEnd);
-  }, []);
 
-  const onTransitionCancel = useCallback(function onTransitionCancel(e) {
     e.target.inFlight = false;
-    e.target.removeEventListener("transitionend", onTransitionEnd);
-    e.target.removeEventListener("transitioncancel", onTransitionCancel);
+
+    e.target.removeEventListener("transitionend", onTransitionEnd, {
+      once: true
+    });
   }, []);
 
   useEffect(() => {
@@ -55,15 +52,13 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
       // Update saved DOM position on transition end to prevent
       // "in-flight" positions saved as previous
-      elem.addEventListener("transitionend", onTransitionEnd);
+      elem.addEventListener("transitionend", onTransitionEnd, { once: true });
     };
 
     const invert = function invert(elem) {
       return function _invert({ dx, dy }) {
         elem.style.transform = `translate(${dx}px, ${dy}px)`;
         elem.style.transition = `transform 0s`;
-
-        elem.addEventListener("transitioncancel", onTransitionCancel);
       };
     };
 
@@ -105,5 +100,5 @@ export default function useFlipAnimation({ root, opts, deps }) {
         childCoords.current.refs[key] = child.getBoundingClientRect();
       }
     }
-  }, [deps, transition, root.current]);
+  }, [deps, transition, delay, easing, onTransitionEnd, root.current]);
 }
