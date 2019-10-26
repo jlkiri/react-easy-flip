@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import useFlip from "./hooks/useFlip";
+import { useFlipAnimation } from "./useFlipAnimation";
 import "./App.css";
 
 const shuffle = function shuffle(array) {
@@ -27,8 +27,16 @@ function App() {
   const verticalRef = useRef();
   const horizontalRef = useRef();
 
-  useFlip({ root: verticalRef, opts: { transition: 700 }, deps: items });
-  useFlip({ root: horizontalRef, opts: { transition: 700 }, deps: items });
+  useFlipAnimation({
+    root: verticalRef,
+    opts: { transition: 700 },
+    deps: items
+  });
+  useFlipAnimation({
+    root: horizontalRef,
+    opts: { transition: 700 },
+    deps: items
+  });
 
   const shuffleItems = function shuffleItems() {
     const result = shuffle([...items]);

@@ -1,31 +1,35 @@
 {
-  "name": "flip",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "react": "16.10.2",
-    "react-dom": "16.10.2",
-    "react-scripts": "3.2.0"
-  },
+  "name": "react-easy-flip",
+  "version": "1.0.0",
+  "description": "A React hook for animation using FLIP technique",
+  "source": "src/index.js",
+  "main": "lib/index.js",
+  "module": "lib/index.es.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "build": "microbundle -f es,cjs --no-sourcemap",
+    "prepare": "yarn build",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jlkiri/react-easy-flip.git"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "keywords": [
+    "react",
+    "FLIP",
+    "animation",
+    "transition"
+  ],
+  "author": "Kirill Vasiltsov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jlkiri/react-easy-flip/issues"
+  },
+  "homepage": "https://github.com/jlkiri/react-easy-flip#readme",
+  "peerDependencies": {
+    "react": "16.10.2"
+  },
+  "devDependencies": {
+    "microbundle": "^0.11.0"
   }
 }
