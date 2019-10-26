@@ -1,1 +1,1 @@
-export { default as useFlipAnimation } from "./useFlipAnimation";
+export { default as useFlipAnimation } from './useFlipAnimation'

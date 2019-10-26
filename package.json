@@ -8,6 +8,10 @@
   "scripts": {
     "build": "microbundle -f es,cjs --no-sourcemap",
     "prepare": "yarn build",
+    "format": "prettier --write src/**/*.{js,jsx} demo/**/*.{js,jsx}",
+    "lint": "eslint src/",
+    "lint:fix": "eslint --fix src/",
+    "deploy": "now --prod",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -30,6 +34,12 @@
     "react": "16.10.2"
   },
   "devDependencies": {
-    "microbundle": "^0.11.0"
+    "eslint": "^6.6.0",
+    "eslint-config-prettier": "^6.4.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-react": "^7.16.0",
+    "eslint-plugin-react-hooks": "^2.2.0",
+    "microbundle": "^0.11.0",
+    "prettier": "^1.18.2"
   }
 }

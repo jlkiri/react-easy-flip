@@ -1,111 +1,106 @@
-/*eslint no-unused-expressions: "off"*/ var t = require("react");
-exports.useFlipAnimation = function(e) {
-  var n = e.root,
-    r = e.opts,
-    i = e.deps,
-    a = t.useRef({ refs: Object.create(null) }),
-    o = r.transition || 500,
-    s = r.delay || 0,
-    u = r.easing || "ease";
-  t.useEffect(
-    function() {
-      if (n.current) {
-        var t = n.current,
-          e = function(t) {
-            (a.current.refs[
-              t.target.dataset.id
-            ] = t.target.getBoundingClientRect()),
-              (t.target.inFlight = !1);
-          };
-        return (
-          t.addEventListener("transitionend", e),
-          function() {
-            return t.removeEventListener("transitionend", e);
-          }
-        );
+import { useRef, useEffect, useLayoutEffect } from 'react'
+
+const debounce = function debounce(fn) {
+  let timer
+  return function _debounce(...args) {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args))
+  }
+}
+
+export default function useFlipAnimation({ root, opts, deps }) {
+  const childCoords = useRef({ refs: Object.create(null) })
+
+  const transition = opts.transition || 500
+  const delay = opts.delay || 0
+  const easing = opts.easing || 'ease'
+
+  useEffect(() => {
+    if (!root.current) return
+
+    const rootCopy = root.current
+
+    // Update saved DOM position on transition end to prevent
+    // "in-flight" positions saved as previous
+    const onTransitionEnd = function onTransitionEnd(e) {
+      const targetKey = e.target.dataset.id
+      childCoords.current.refs[targetKey] = e.target.getBoundingClientRect()
+      e.target.inFlight = false
+    }
+
+    rootCopy.addEventListener('transitionend', onTransitionEnd)
+    return () => rootCopy.removeEventListener('transitionend', onTransitionEnd)
+  }, [root, deps])
+
+  useEffect(() => {
+    const onResize = debounce(() => {
+      if (!root.current) return
+
+      const children = root.current.children
+      for (let child of children) {
+        const key = child.dataset.id
+        childCoords.current.refs[key] = child.getBoundingClientRect()
       }
-    },
-    [n, i]
-  ),
-    t.useEffect(
-      function() {
-        var t,
-          e,
-          r =
-            ((t = function() {
-              if (n.current)
-                for (var t = 0, e = n.current.children; t < e.length; t += 1) {
-                  var r = e[t];
-                  a.current.refs[r.dataset.id] = r.getBoundingClientRect();
-                }
-            }),
-            function() {
-              for (var n = [], r = arguments.length; r--; ) n[r] = arguments[r];
-              clearTimeout(e),
-                (e = setTimeout(function() {
-                  return t.apply(void 0, n);
-                }));
-            });
-        return (
-          window.addEventListener("resize", r),
-          function() {
-            return window.removeEventListener("resize", r);
-          }
-        );
-      },
-      [n]
-    ),
-    t.useLayoutEffect(
-      function() {
-        if (n.current) {
-          var t = n.current.children;
-          if (!(t.length < 1)) {
-            var e = Object.assign({}, a.current.refs);
-            requestAnimationFrame(function() {
-              for (
-                var n = function() {
-                    var t,
-                      n = i[r],
-                      a = n.dataset.id;
-                    if ((a in e)) {
-                      var f = e[a],
-                        c = f.left,
-                        d = f.top,
-                        l = n.getBoundingClientRect().left,
-                        g = n.getBoundingClientRect().top;
-                      ((t = n),
-                      function(e) {
-                        (t.style.transform =
-                          "translate(" + e.dx + "px, " + e.dy + "px)"),
-                          (t.style.transition = "transform 0s");
-                      })({ dx: c - l, dy: d - g }),
-                        requestAnimationFrame(function() {
-                          return (
-                            ((t = n).style.transform = ""),
-                            (t.style.transition =
-                              "transform " + o + "ms " + u + " " + s + "ms"),
-                            void (t.inFlight = !0)
-                          );
-                          var t;
-                        });
-                    }
-                  },
-                  r = 0,
-                  i = t;
-                r < i.length;
-                r += 1
-              )
-                n();
-            });
-            for (var r = 0, i = t; r < i.length; r += 1) {
-              var f = i[r];
-              f.inFlight ||
-                (a.current.refs[f.dataset.id] = f.getBoundingClientRect());
-            }
-          }
+    })
+
+    window.addEventListener('resize', onResize)
+
+    return () => window.removeEventListener('resize', onResize)
+  }, [root])
+
+  useLayoutEffect(() => {
+    if (!root.current) return
+
+    const play = function play(elem) {
+      elem.style.transform = ``
+      elem.style.transition = `transform ${transition}ms ${easing} ${delay}ms`
+      elem.inFlight = true
+    }
+
+    const invert = function invert(elem) {
+      return function _invert({ dx, dy }) {
+        elem.style.transform = `translate(${dx}px, ${dy}px)`
+        elem.style.transition = `transform 0s`
+      }
+    }
+
+    const children = root.current.children
+
+    if (children.length < 1) return
+
+    // Clone ref content because it is updated faster than rAF executes
+    const childCoordCopy = { ...childCoords.current.refs }
+
+    requestAnimationFrame(() => {
+      for (let child of children) {
+        const key = child.dataset.id
+
+        if (key in childCoordCopy) {
+          const coords = childCoordCopy[key]
+
+          // Calculate delta of old and new DOM positions for transform
+          const prevX = coords.left
+          const prevY = coords.top
+
+          const nextX = child.getBoundingClientRect().left
+          const nextY = child.getBoundingClientRect().top
+
+          const deltaX = prevX - nextX
+          const deltaY = prevY - nextY
+
+          invert(child)({ dx: deltaX, dy: deltaY })
+
+          requestAnimationFrame(() => play(child))
         }
-      },
-      [i, o, s, u, n]
-    );
-};
-//# sourceMappingURL=index.js.map
+      }
+    })
+
+    // Save new DOM positions
+    for (let child of children) {
+      const key = child.dataset.id
+      if (!child.inFlight) {
+        childCoords.current.refs[key] = child.getBoundingClientRect()
+      }
+    }
+  }, [deps, transition, delay, easing, root])
+}

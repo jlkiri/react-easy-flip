@@ -1,0 +1,24 @@
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: module
+env:
+  es6: true
+  browser: true
+  node: true
+plugins:
+  - prettier
+  - react
+  - react-hooks
+extends:
+  - plugin:prettier/recommended
+  - eslint:recommended
+  - plugin:react/recommended
+rules:
+  no-console: warn
+  no-eval: error
+  prettier/prettier: error
+  react-hooks/rules-of-hooks: error
+  react-hooks/exhaustive-deps: warn
+settings:
+  react:
+    version: detect
