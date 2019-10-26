@@ -15,16 +15,20 @@ export default function useFlipAnimation({ root, opts, deps }) {
   const delay = opts.delay || 0;
   const easing = opts.easing || "ease";
 
-  const onTransitionEnd = useCallback(function onTransitionEnd(e) {
-    const targetKey = e.target.dataset.id;
-    childCoords.current.refs[targetKey] = e.target.getBoundingClientRect();
+  useEffect(() => {
+    if (!root.current) return;
 
-    e.target.inFlight = false;
+    const rootCopy = root.current;
 
-    e.target.removeEventListener("transitionend", onTransitionEnd, {
-      once: true
-    });
-  }, []);
+    const onTransitionEnd = function onTransitionEnd(e) {
+      const targetKey = e.target.dataset.id;
+      childCoords.current.refs[targetKey] = e.target.getBoundingClientRect();
+      e.target.inFlight = false;
+    };
+
+    rootCopy.addEventListener("transitionend", onTransitionEnd);
+    return () => rootCopy.removeEventListener("transitionend", onTransitionEnd);
+  }, [root.current, deps]);
 
   useEffect(() => {
     const onResize = debounce(() => {
@@ -52,7 +56,7 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
       // Update saved DOM position on transition end to prevent
       // "in-flight" positions saved as previous
-      elem.addEventListener("transitionend", onTransitionEnd, { once: true });
+      // elem.addEventListener("transitionend", onTransitionEnd, { once: true });
     };
 
     const invert = function invert(elem) {
@@ -100,5 +104,5 @@ export default function useFlipAnimation({ root, opts, deps }) {
         childCoords.current.refs[key] = child.getBoundingClientRect();
       }
     }
-  }, [deps, transition, delay, easing, onTransitionEnd, root.current]);
+  }, [deps, transition, delay, easing, root.current]);
 }
