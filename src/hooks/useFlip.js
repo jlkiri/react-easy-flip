@@ -20,6 +20,8 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
     const rootCopy = root.current;
 
+    // Update saved DOM position on transition end to prevent
+    // "in-flight" positions saved as previous
     const onTransitionEnd = function onTransitionEnd(e) {
       const targetKey = e.target.dataset.id;
       childCoords.current.refs[targetKey] = e.target.getBoundingClientRect();
@@ -53,10 +55,6 @@ export default function useFlipAnimation({ root, opts, deps }) {
       elem.style.transform = ``;
       elem.style.transition = `transform ${transition}ms ${easing} ${delay}ms`;
       elem.inFlight = true;
-
-      // Update saved DOM position on transition end to prevent
-      // "in-flight" positions saved as previous
-      // elem.addEventListener("transitionend", onTransitionEnd, { once: true });
     };
 
     const invert = function invert(elem) {
