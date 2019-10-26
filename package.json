@@ -1,7 +1,7 @@
 {
   "name": "react-easy-flip",
   "version": "1.0.0",
-  "description": "A React hook for animation using FLIP technique",
+  "description": "A React library for animation using FLIP technique",
   "source": "src/index.js",
   "main": "lib/index.js",
   "module": "lib/index.es.js",
@@ -11,7 +11,8 @@
     "format": "prettier --write src/**/*.{js,jsx} demo/**/*.{js,jsx}",
     "lint": "eslint src/",
     "lint:fix": "eslint --fix src/",
-    "deploy": "now --prod",
+    "deploy": "cd demo && now --prod",
+    "develop": "cd demo && yarn start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -31,7 +32,7 @@
   },
   "homepage": "https://github.com/jlkiri/react-easy-flip#readme",
   "peerDependencies": {
-    "react": "16.10.2"
+    "react": ">= 16.8.0"
   },
   "devDependencies": {
     "eslint": "^6.6.0",
