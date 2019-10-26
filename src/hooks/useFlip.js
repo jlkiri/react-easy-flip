@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback, useLayoutEffect } from "react";
+import { useRef, useEffect, useLayoutEffect } from "react";
 
 const debounce = function debounce(fn) {
   let timer;
@@ -30,7 +30,7 @@ export default function useFlipAnimation({ root, opts, deps }) {
 
     rootCopy.addEventListener("transitionend", onTransitionEnd);
     return () => rootCopy.removeEventListener("transitionend", onTransitionEnd);
-  }, [root.current, deps]);
+  }, [root, deps]);
 
   useEffect(() => {
     const onResize = debounce(() => {
@@ -46,7 +46,7 @@ export default function useFlipAnimation({ root, opts, deps }) {
     window.addEventListener("resize", onResize);
 
     return () => window.removeEventListener("resize", onResize);
-  }, [root.current]);
+  }, [root]);
 
   useLayoutEffect(() => {
     if (!root.current) return;
@@ -102,5 +102,5 @@ export default function useFlipAnimation({ root, opts, deps }) {
         childCoords.current.refs[key] = child.getBoundingClientRect();
       }
     }
-  }, [deps, transition, delay, easing, root.current]);
+  }, [deps, transition, delay, easing, root]);
 }
