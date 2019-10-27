@@ -40,7 +40,7 @@ OR
 
 ## Comparison with other libraries
 
-Unlike similar libraries such as [`react-overdrive`](https://github.com/berzniz/react-overdrive) or [`react-flip-toolkit`](https://github.com/aholachek/react-flip-toolkit), this library does **_not yet_ support animating opacity or scale**. It can only animate positions. The primary trade-off is the package size.
+Unlike similar libraries such as [`react-overdrive`](https://github.com/berzniz/react-overdrive) or [`react-flip-toolkit`](https://github.com/aholachek/react-flip-toolkit) that are based on a [FLIP technique](https://aerotwist.com/blog/flip-your-animations/), this library does **_not yet_ support animating opacity or scale**. It can only animate positions. The primary trade-off is the package size.
 
 Additionally, this is the **only** FLIP library for React that provides animation via a hook. It does not use React class components and lifecycle methods that are considered unsafe in latest releases of React.
 
