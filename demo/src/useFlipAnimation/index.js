@@ -1,5 +1,11 @@
 import { useRef, useEffect, useLayoutEffect } from 'react'
 
+const DEFAULT_OPTIONS = {
+  transition: 500,
+  delay: 0,
+  easing: 'ease'
+}
+
 const debounce = function debounce(fn) {
   let timer
   return function _debounce(...args) {
@@ -8,12 +14,16 @@ const debounce = function debounce(fn) {
   }
 }
 
-export default function useFlipAnimation({ root, opts, deps }) {
+export default function useFlipAnimation({
+  root,
+  deps,
+  opts = DEFAULT_OPTIONS
+}) {
   const childCoords = useRef({ refs: Object.create(null) })
 
-  const transition = opts.transition || 500
-  const delay = opts.delay || 0
-  const easing = opts.easing || 'ease'
+  const transition = opts.transition || DEFAULT_OPTIONS.transition
+  const delay = opts.delay || DEFAULT_OPTIONS.delay
+  const easing = opts.easing || DEFAULT_OPTIONS.easing
 
   useEffect(() => {
     if (!root.current) return
