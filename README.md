@@ -6,7 +6,7 @@
 
 # React Easy Flip
 
-<center><b>An extremely lightweight React library for smooth FLIP animations (807B gzipped)</b></center>
+<center><b>An extremely lightweight React library for smooth FLIP animations (807B minified + gzipped)</b></center>
 
 ## Demo
 
