@@ -70,6 +70,10 @@ useFlipAnimation({ root: rootRef, opts, deps: depArray })
 
 The code for the demo above can be found in this repository [here](https://github.com/jlkiri/react-easy-flip/tree/master/demo).
 
+## Requirements
+
+This library requires React version 16.8.0 or higher (the one with Hooks).
+
 ## In progress
 
 - [ ] Add Typescript support
