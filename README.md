@@ -1,9 +1,7 @@
 ![minzipped](https://badgen.net/bundlephobia/minzip/react-easy-flip)
 
 <p align="center">
-  <a href="https://codepen.io/aholachek/pen/ERRpEj">
   <img src="./assets/logo.gif" width='500px' alt='react-easy-flip animation logo' />
-  </a>
 </p>
 
 # React Easy Flip
