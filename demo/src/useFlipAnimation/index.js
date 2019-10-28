@@ -36,9 +36,11 @@ export default function useFlipAnimation({
       const targetKey = e.target.dataset.id
       childCoords.current.refs[targetKey] = e.target.getBoundingClientRect()
       e.target.inFlight = false
+      return Object.entries(childCoords.current.refs)
     }
 
     rootCopy.addEventListener('transitionend', onTransitionEnd)
+
     return () => rootCopy.removeEventListener('transitionend', onTransitionEnd)
   }, [root, deps])
 
