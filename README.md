@@ -38,6 +38,16 @@ OR
 
    `useFlipAnimation({ root: yourRoot, deps: yourArray })`
 
+## Usage
+
+`useFlipAnimation` accepts one argument, which is an object containing your parent `ref`, dependencies and options.
+
+| Field  | Required |   Type   |                                      Details                                      |
+| :----: | :------: | :------: | :-------------------------------------------------------------------------------: |
+| `root` |  `true`  |  `ref`   | A React reference to a parent element which contains children you want to animate |
+| `deps` |  `true`  |  `any`   |                                 Hook dependencies                                 |
+| `opts` | `false`  | `object` |                             Animation options object                              |
+
 ## Comparison with other libraries
 
 Unlike similar libraries such as [`react-overdrive`](https://github.com/berzniz/react-overdrive) or [`react-flip-toolkit`](https://github.com/aholachek/react-flip-toolkit) that are based on a [FLIP technique](https://aerotwist.com/blog/flip-your-animations/), this library does **_not yet_ support animating opacity or scale**. It can only animate positions. The primary trade-off is the package size.
