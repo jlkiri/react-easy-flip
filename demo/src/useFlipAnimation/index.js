@@ -17,18 +17,21 @@ const debounce = function debounce(fn) {
 export default function useFlipAnimation({
   root,
   deps,
-  opts = DEFAULT_OPTIONS
-}) {
+  opts = DEFAULT_OPTIONS,
+  __TEST__
+} = {}) {
   const childCoords = useRef({ refs: Object.create(null) })
 
   const transition = opts.transition || DEFAULT_OPTIONS.transition
   const delay = opts.delay || DEFAULT_OPTIONS.delay
   const easing = opts.easing || DEFAULT_OPTIONS.easing
 
+  const reportPosition = () => {}
+
   useEffect(() => {
     if (!root.current) return
 
-    const rootCopy = root.current
+    const rootClone = root.current
 
     // Update saved DOM position on transition end to prevent
     // "in-flight" positions saved as previous
@@ -36,12 +39,22 @@ export default function useFlipAnimation({
       const targetKey = e.target.dataset.id
       childCoords.current.refs[targetKey] = e.target.getBoundingClientRect()
       e.target.inFlight = false
-      return Object.entries(childCoords.current.refs)
     }
 
-    rootCopy.addEventListener('transitionend', onTransitionEnd)
+    rootClone.addEventListener('transitionend', onTransitionEnd)
 
-    return () => rootCopy.removeEventListener('transitionend', onTransitionEnd)
+    // Testing purposes
+    if (__TEST__) {
+      for (let child of rootClone.children) {
+        child.reportPosition = child.reportPosition || reportPosition
+        const key = child.dataset.id
+        child.reportPosition({
+          [key]: childCoords.current.refs[key]
+        })
+      }
+    }
+
+    return () => rootClone.removeEventListener('transitionend', onTransitionEnd)
   }, [root, deps])
 
   useEffect(() => {
