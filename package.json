@@ -2,7 +2,7 @@
   "name": "react-easy-flip",
   "version": "1.1.1",
   "description": "A React library for animation using FLIP technique",
-  "source": "src/index.js",
+  "source": "src/useFlipAnimation/index.ts",
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "scripts": {
@@ -13,7 +13,10 @@
     "lint:fix": "eslint --fix src/",
     "deploy": "cd demo && now --prod",
     "develop": "cd demo && yarn start",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "react-scripts start",
+    "dev:build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "repository": {
     "type": "git",
@@ -35,12 +38,36 @@
     "react": ">= 16.8.0"
   },
   "devDependencies": {
+    "@testing-library/react-hooks": "^3.1.1",
+    "@types/jest": "^24.0.21",
+    "@types/node": "^12.12.5",
+    "@types/react": "^16.9.11",
+    "@types/react-dom": "^16.9.3",
     "eslint": "^6.6.0",
     "eslint-config-prettier": "^6.4.0",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-react": "^7.16.0",
     "eslint-plugin-react-hooks": "^2.2.0",
     "microbundle": "^0.11.0",
-    "prettier": "^1.18.2"
+    "prettier": "^1.18.2",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
+    "react-scripts": "3.2.0",
+    "react-test-renderer": "^16.11.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "typescript": "^3.7.1-rc"
   }
 }

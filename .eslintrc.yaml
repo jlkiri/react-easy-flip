@@ -13,6 +13,7 @@ extends:
   - plugin:prettier/recommended
   - eslint:recommended
   - plugin:react/recommended
+  - react-app
 rules:
   no-console: warn
   no-eval: error

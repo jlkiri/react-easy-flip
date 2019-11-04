@@ -5,11 +5,14 @@ node_modules/
 /.pnp
 .pnp.js
 
+# VSCode settings and caches
+.*
+
 # testing
 /coverage
 
 # production
-build/
+/build
 
 # package
 /lib

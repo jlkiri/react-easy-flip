@@ -1,12 +1,16 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable no-console */
+
 import { renderHook } from '@testing-library/react-hooks'
 import React from 'react'
-import useFlipAnimation from './'
+import useFlipAnimation from '../useFlipAnimation'
+import { TestRef, Position } from '../useFlipAnimation/types'
 
 it('Properly stores child state in a ref object', () => {
   const MAX_RENDERS = 2
 
-  const rootRef = React.createRef()
-  const positionByRender = {}
+  const rootRef = <React.MutableRefObject<TestRef>>React.createRef();
+  const positionByRender: Position = {}
 
   let renderNumber = 1
 
@@ -16,8 +20,8 @@ it('Properly stores child state in a ref object', () => {
   rootRef.current.addEventListener = (name, _) => {
     console.log(`${name} successfully added`)
 
-    for (let child of rootRef.current.children) {
-      const key = child.dataset.id
+    for (let child of rootRef.current.children!) {
+      const key = child.dataset!.id!
       child.reportPosition = (pos) => {
         if (renderNumber <= MAX_RENDERS) {
           positionByRender[`${key}-${renderNumber}`] = pos[key]
@@ -59,7 +63,7 @@ it('Properly stores child state in a ref object', () => {
     __TEST__: true
   }
 
-  const { rerender } = renderHook((args) => useFlipAnimation(args), {
+  const { rerender } = renderHook((args) => useFlipAnimation(args as any), {
     initialProps: initialArgs
   })
 

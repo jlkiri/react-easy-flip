@@ -1,4 +1,5 @@
 import { useRef, useEffect, useLayoutEffect } from 'react'
+import { UFAHook, IElement } from './types';
 
 const DEFAULT_OPTIONS = {
   transition: 500,
@@ -6,67 +7,72 @@ const DEFAULT_OPTIONS = {
   easing: 'ease'
 }
 
-const debounce = function debounce(fn) {
-  let timer
-  return function _debounce(...args) {
+const debounce = function debounce<F extends (...args: any[]) => any>(cb: F, wait: number) {
+  let timer: any
+  return function _debounce(...args: Parameters<F>) {
     clearTimeout(timer)
-    timer = setTimeout(() => fn(...args))
+    timer = setTimeout(() => cb(...args), wait);
   }
 }
 
-export default function useFlipAnimation({
+const useFlipAnimation: UFAHook = ({
   root,
   deps,
   opts = DEFAULT_OPTIONS,
   __TEST__
-} = {}) {
+} = {}) => {
   const childCoords = useRef({ refs: Object.create(null) })
 
   const transition = opts.transition || DEFAULT_OPTIONS.transition
   const delay = opts.delay || DEFAULT_OPTIONS.delay
   const easing = opts.easing || DEFAULT_OPTIONS.easing
 
-  const reportPosition = () => {}
+  const reportPosition = () => { }
 
   useEffect(() => {
-    if (!root.current) return
+    if (!root || !root.current) return
 
     const rootClone = root.current
 
     // Update saved DOM position on transition end to prevent
     // "in-flight" positions saved as previous
-    const onTransitionEnd = function onTransitionEnd(e) {
-      const targetKey = e.target.dataset.id
-      childCoords.current.refs[targetKey] = e.target.getBoundingClientRect()
-      e.target.inFlight = false
+    const onTransitionEnd = function onTransitionEnd(e: TransitionEvent) {
+      const target = e.target as IElement;
+      const targetKey = target.dataset!.id!
+      childCoords.current.refs[targetKey] = target.getBoundingClientRect()
+      target.inFlight = false
     }
 
     rootClone.addEventListener('transitionend', onTransitionEnd)
 
     // Testing purposes
     if (__TEST__) {
-      for (let child of rootClone.children) {
-        child.reportPosition = child.reportPosition || reportPosition
-        const key = child.dataset.id
-        child.reportPosition({
+      Array.from(rootClone.children).forEach(child => {
+        const _child = child as IElement;
+        _child.reportPosition = _child.reportPosition || reportPosition;
+        const key = _child.dataset.id!
+        _child.reportPosition({
           [key]: childCoords.current.refs[key]
         })
-      }
+      });
     }
 
     return () => rootClone.removeEventListener('transitionend', onTransitionEnd)
   }, [root, deps])
 
   useEffect(() => {
-    const onResize = debounce(() => {
-      if (!root.current) return
+    if (!root || !root.current) return;
 
-      const children = root.current.children
-      for (let child of children) {
-        const key = child.dataset.id
+    const onResize = debounce(() => {
+      const children = root.current!.children
+      Array.from(children).forEach(child => {
+        const key = (child as IElement).dataset.id
+
+        if (!key) return
+
         childCoords.current.refs[key] = child.getBoundingClientRect()
-      }
-    })
+      });
+    }, 500)
 
     window.addEventListener('resize', onResize)
 
@@ -74,16 +80,16 @@ export default function useFlipAnimation({
   }, [root])
 
   useLayoutEffect(() => {
-    if (!root.current) return
+    if (!root || !root.current) return
 
-    const play = function play(elem) {
+    const play = function play(elem: IElement) {
       elem.style.transform = ``
       elem.style.transition = `transform ${transition}ms ${easing} ${delay}ms`
       elem.inFlight = true
     }
 
-    const invert = function invert(elem) {
-      return function _invert({ dx, dy }) {
+    const invert = function invert(elem: IElement) {
+      return function _invert({ dx, dy }: { dx: number, dy: number }) {
         elem.style.transform = `translate(${dx}px, ${dy}px)`
         elem.style.transition = `transform 0s`
       }
@@ -97,8 +103,10 @@ export default function useFlipAnimation({
     const childCoordCopy = { ...childCoords.current.refs }
 
     requestAnimationFrame(() => {
-      for (let child of children) {
-        const key = child.dataset.id
+      Array.from(children).forEach(child => {
+        const key = (child as IElement).dataset.id
+
+        if (!key) return;
 
         if (key in childCoordCopy) {
           const coords = childCoordCopy[key]
@@ -113,19 +121,24 @@ export default function useFlipAnimation({
           const deltaX = prevX - nextX
           const deltaY = prevY - nextY
 
-          invert(child)({ dx: deltaX, dy: deltaY })
+          invert(child as IElement)({ dx: deltaX, dy: deltaY })
 
-          requestAnimationFrame(() => play(child))
+          requestAnimationFrame(() => play(child as IElement))
         }
-      }
+      });
     })
 
     // Save new DOM positions
-    for (let child of children) {
-      const key = child.dataset.id
-      if (!child.inFlight) {
+    Array.from(children).forEach(child => {
+      const key = (child as IElement).dataset.id
+
+      if (!key) return
+
+      if (!(child as IElement).inFlight) {
         childCoords.current.refs[key] = child.getBoundingClientRect()
       }
-    }
+    });
   }, [deps, transition, delay, easing, root])
 }
+
+export default useFlipAnimation;
