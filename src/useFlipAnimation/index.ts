@@ -1,10 +1,10 @@
 import { useRef, useEffect, useLayoutEffect } from 'react'
-import { UFAHook, IElement } from './types';
+import { UFAHook, UFAHookOptions, IElement } from './types';
 
-const DEFAULT_OPTIONS = {
+const DEFAULT_OPTIONS: UFAHookOptions = {
   transition: 500,
   delay: 0,
-  easing: 'ease'
+  easing: 'ease',
 }
 
 const debounce = function debounce<F extends (...args: any[]) => any>(cb: F, wait: number) {
@@ -38,6 +38,7 @@ const useFlipAnimation: UFAHook = ({
     // "in-flight" positions saved as previous
     const onTransitionEnd = function onTransitionEnd(e: TransitionEvent) {
       const target = e.target as IElement;
+      // Event is added only to elements which have id in their dataset
       const targetKey = target.dataset!.id!
       childCoords.current.refs[targetKey] = target.getBoundingClientRect()
       target.inFlight = false
@@ -64,7 +65,9 @@ const useFlipAnimation: UFAHook = ({
     if (!root || !root.current) return;
 
     const onResize = debounce(() => {
-      const children = root.current!.children
+      if (!root.current) return;
+
+      const children = root.current.children
       Array.from(children).forEach(child => {
         const key = (child as IElement).dataset.id
 
