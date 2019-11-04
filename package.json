@@ -3,16 +3,17 @@
   "version": "1.1.1",
   "description": "A React library for animation using FLIP technique",
   "source": "src/useFlipAnimation/index.ts",
+  "types": "lib/index.d.ts",
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "scripts": {
-    "build": "microbundle -f es,cjs --no-sourcemap",
+    "build": "microbundle -f es,cjs --no-sourcemap --tsconfig tsconfig.build.json",
     "prepare": "yarn build",
-    "format": "prettier --write src/**/*.{js,jsx} demo/**/*.{js,jsx}",
+    "format": "prettier --write src/**/*.{js,jsx}",
     "lint": "eslint src/",
     "lint:fix": "eslint --fix src/",
-    "deploy": "cd demo && now --prod",
-    "develop": "cd demo && yarn start",
+    "deploy": "now --prod",
+    "develop": "yarn start",
     "start": "react-scripts start",
     "dev:build": "react-scripts build",
     "test": "react-scripts test",
@@ -53,7 +54,8 @@
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-scripts": "3.2.0",
-    "react-test-renderer": "^16.11.0"
+    "react-test-renderer": "^16.11.0",
+    "typescript": "^3.7.1-rc"
   },
   "browserslist": {
     "production": [
@@ -66,8 +68,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "dependencies": {
-    "typescript": "^3.7.1-rc"
   }
 }

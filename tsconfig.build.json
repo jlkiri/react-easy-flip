@@ -5,17 +5,14 @@
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["dom", "dom.iterable", "es5", "es6", "esnext"],
+    "lib": ["dom.iterable", "es5", "es6", "esnext", "dom"],
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "downlevelIteration": true,
-    "jsx": "react",
-    "allowJs": true,
-    "noEmit": true
+    "jsx": "react"
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "build"]
+  "files": ["src/useFlipAnimation/index.ts", "src/useFlipAnimation/types.ts"]
 }
