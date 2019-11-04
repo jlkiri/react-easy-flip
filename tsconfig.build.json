@@ -9,10 +9,10 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
-    "resolveJsonModule": true,
     "isolatedModules": true,
-    "downlevelIteration": true,
-    "jsx": "react"
+    "downlevelIteration": true
   },
-  "files": ["src/useFlipAnimation/index.ts", "src/useFlipAnimation/types.ts"]
+  "include": ["src"],
+  "files": ["src/useFlipAnimation/index.ts"],
+  "exclude": ["public", "**/__tests__/*.ts", "node_modules", "build"]
 }

@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react'
-import useFlipAnimation from './useFlipAnimation'
+import { useFlipAnimation } from 'react-easy-flip'
 import './App.css'
 
-const shuffle = function shuffle(array) {
+const shuffle = function shuffle(array: any[]) {
   for (let i = array.length - 1; i > 0; i--) {
     let j = Math.floor(Math.random() * (i + 1))
     ;[array[i], array[j]] = [array[j], array[i]]
@@ -24,8 +24,8 @@ const itemCollection = [
 
 function App() {
   const [items, setItems] = useState(itemCollection)
-  const verticalRef = useRef()
-  const horizontalRef = useRef()
+  const verticalRef = useRef(null)
+  const horizontalRef = useRef(null)
 
   useFlipAnimation({
     root: verticalRef,
