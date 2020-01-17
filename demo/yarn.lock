@@ -8506,7 +8506,7 @@ react-dom@^16.12.0:
     prop-types "^15.6.2"
     scheduler "^0.18.0"
 
-"react-easy-flip@file:../src":
+"react-easy-flip@file:../lib":
   version "0.0.0"
 
 react-error-overlay@^6.0.4:

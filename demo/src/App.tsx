@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import useFlipAnimation from 'react-easy-flip'
+import { useFlipAnimation } from 'react-easy-flip'
 import './App.css'
 
 const shuffle = function shuffle(array: any[]) {
@@ -29,12 +29,13 @@ function App() {
 
   useFlipAnimation({
     root: verticalRef,
-    opts: { transition: 700 },
+    opts: { transition: 700, delay: 0, easing: 'ease' },
     deps: items
   })
+
   useFlipAnimation({
     root: horizontalRef,
-    opts: { transition: 700 },
+    opts: { transition: 700, delay: 0, easing: 'ease' },
     deps: items
   })
 
