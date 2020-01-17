@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react'
-import { useFlipAnimation } from 'react-easy-flip'
+import { useFlipAnimation } from './hook'
 import './App.css'
 
-const shuffle = function shuffle(array: any[]) {
+/* const shuffle = function shuffle(array: any[]) {
   for (let i = array.length - 1; i > 0; i--) {
     let j = Math.floor(Math.random() * (i + 1))
     ;[array[i], array[j]] = [array[j], array[i]]
@@ -20,10 +20,35 @@ const itemCollection = [
   { id: 7, text: 'This is random string number 7' },
   { id: 8, text: 'This is random string number 8' },
   { id: 9, text: 'This is random string number 9' }
-]
+] */
 
 function App() {
-  const [items, setItems] = useState(itemCollection)
+  const [expanded, setExpanded] = useState(false)
+  const ref = useRef(null)
+
+  useFlipAnimation({
+    root: ref,
+    opts: {
+      transition: 400,
+      delay: 0,
+      easing: 'ease-out',
+      transformOrigin: 'top left'
+    },
+    deps: expanded
+  })
+
+  return (
+    <div ref={ref} className="rect-list">
+      <div
+        data-id="first"
+        onClick={() => setExpanded(!expanded)}
+        className={`rect first ${expanded ? 'expanded' : ''}`}
+      ></div>
+      <div className="rect second"></div>
+      <div className="rect third"></div>
+    </div>
+  )
+  /* const [items, setItems] = useState(itemCollection)
   const verticalRef = useRef(null)
   const horizontalRef = useRef(null)
 
@@ -78,7 +103,7 @@ function App() {
         })}
       </div>
     </div>
-  )
+  ) */
 }
 
 export default App

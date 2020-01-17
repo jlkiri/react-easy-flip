@@ -62,3 +62,35 @@
   background-color: white;
   box-shadow: 0 0 5px 1px rgb(243, 87, 87);
 }
+
+.rect-list {
+  padding: 15px;
+}
+
+.rect {
+  height: 100px;
+  margin-top: 15px;
+  z-index: 0;
+}
+
+.rect.first {
+  background-color: aquamarine;
+}
+
+.rect.second {
+  background-color: red;
+}
+
+.rect.third {
+  background-color: yellow;
+}
+
+.expanded {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
+}
