@@ -9,7 +9,7 @@ import { TestRef, Position } from '../useFlipAnimation/types'
 it('Properly stores child state in a ref object', () => {
   const MAX_RENDERS = 2
 
-  const rootRef = <React.MutableRefObject<TestRef>>React.createRef();
+  const rootRef = <React.MutableRefObject<TestRef>>React.createRef()
   const positionByRender: Position = {}
 
   let renderNumber = 1

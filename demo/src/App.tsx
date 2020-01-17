@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { useFlipAnimation } from 'react-easy-flip'
+import useFlipAnimation from 'react-easy-flip'
 import './App.css'
 
 const shuffle = function shuffle(array: any[]) {

@@ -2,22 +2,17 @@
   "name": "react-easy-flip",
   "version": "1.1.1",
   "description": "A React library for animation using FLIP technique",
-  "source": "src/useFlipAnimation/index.ts",
+  "source": "src/index.ts",
   "types": "lib/index.d.ts",
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "scripts": {
     "build": "microbundle -f es,cjs --no-sourcemap --tsconfig tsconfig.build.json",
     "prepare": "yarn build",
-    "format": "prettier --write src/**/*.{js,jsx}",
+    "format": "prettier --write src/**.ts src/*.ts demo/**/*.{ts,tsx}",
     "lint": "eslint src/",
     "lint:fix": "eslint --fix src/",
-    "deploy": "now --prod",
-    "develop": "yarn start",
-    "start": "react-scripts start",
-    "dev:build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "develop": "yarn start"
   },
   "repository": {
     "type": "git",
