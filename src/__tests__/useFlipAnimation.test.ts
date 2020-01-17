@@ -3,13 +3,13 @@
 
 import { renderHook } from '@testing-library/react-hooks'
 import React from 'react'
-import useFlipAnimation from '../useFlipAnimation'
-import { TestRef, Position } from '../useFlipAnimation/types'
+import { useFlipAnimation } from '../useFlipAnimation'
+import { TestRef, Position } from '../types'
 
 it('Properly stores child state in a ref object', () => {
   const MAX_RENDERS = 2
 
-  const rootRef = <React.MutableRefObject<TestRef>>React.createRef()
+  const rootRef = React.createRef() as React.MutableRefObject<TestRef>
   const positionByRender: Position = {}
 
   let renderNumber = 1
@@ -59,7 +59,7 @@ it('Properly stores child state in a ref object', () => {
   const initialArgs = {
     root: rootRef,
     deps: initialDeps,
-    opts: { transition: 0 },
+    opts: { transition: 0, delay: 0, easing: 'ease' },
     __TEST__: true
   }
 
@@ -93,7 +93,7 @@ it('Properly stores child state in a ref object', () => {
   const nextArgs = {
     root: rootRef,
     deps: nextDeps,
-    opts: { transition: 0 },
+    opts: { transition: 0, delay: 0, easing: 'ease' },
     __TEST__: true
   }
 

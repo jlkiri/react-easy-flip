@@ -86,7 +86,7 @@ This library requires React version 16.8.0 or higher (the one with Hooks).
 
 ## In progress
 
-- [ ] Add Typescript support
+- [x] Add Typescript support
 - [ ] Add support for animating scale and opacity
 - [ ] Add comprehensive examples
 - [x] Add tests
