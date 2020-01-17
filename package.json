@@ -52,7 +52,9 @@
     "react-dom": "^16.11.0",
     "react-scripts": "3.2.0",
     "react-test-renderer": "^16.11.0",
-    "typescript": "^3.7.1-rc"
+    "typescript": "^3.7.1-rc",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.3.0"
   },
   "files": [
     "lib/index.d.ts",
@@ -72,9 +74,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "dependencies": {
-    "jest": "^24.9.0",
-    "ts-jest": "^24.3.0"
   }
 }
