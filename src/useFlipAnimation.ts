@@ -39,7 +39,7 @@ export const useFlipAnimation: UFAHook = ({
   const easing = opts.easing || DEFAULT_OPTIONS.easing
   const transformOrigin = opts.transformOrigin || DEFAULT_OPTIONS.transformOrigin
 
-  // Save initial positions
+  // Use to save initial positions and invert when previous position is known
   useLayoutEffect(() => {
     if (!root.current) return
 
@@ -62,15 +62,20 @@ export const useFlipAnimation: UFAHook = ({
       if (!flipId) return
 
       if (flipId in childCoords.current.refs) {
-        const coords = childCoords.current.refs[flipId]
         const rect = child.getBoundingClientRect()
+        const cachedCoords = child.inFlight
+          ? rect
+          : childCoords.current.refs[flipId]
+        const nextCoords = child.inFlight
+          ? childCoords.current.refs[flipId]
+          : rect
 
         // Calculate delta of old and new DOM positions for transform
-        const translateX = coords.left - rect.left
-        const translateY = coords.top - rect.top
+        const translateX = cachedCoords.left - nextCoords.left
+        const translateY = cachedCoords.top - nextCoords.top
 
-        const scaleX = coords.width / rect.width
-        const scaleY = coords.height / rect.height
+        const scaleX = cachedCoords.width / nextCoords.width
+        const scaleY = cachedCoords.height / nextCoords.height
 
         invert(child)({
           dx: translateX,
@@ -143,6 +148,7 @@ export const useFlipAnimation: UFAHook = ({
     return () => rootClone.removeEventListener('transitionend', onTransitionEnd)
   }, [root, deps, __TEST__])
 
+  // Use to "play" inverted elements
   useEffect(() => {
     if (!root.current) return
 

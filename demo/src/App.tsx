@@ -118,13 +118,7 @@ const examples: Examples = {
 
 function App() {
   const [example, setExample] = useState('none')
-  return (
-    <div>
-      <button onClick={() => setExample('shuffle')}>Shuffle</button>
-      <button onClick={() => setExample('simpleScale')}>Simple scale</button>
-      <div className="container">{examples[example]}</div>
-    </div>
-  )
+  return <div className="container">{examples['simpleScale']}</div>
 }
 
 export default App
