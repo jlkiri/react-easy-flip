@@ -47,8 +47,14 @@ export const useFlipAnimation: UFAHook = ({
       if (!child.inFlight) {
         childCoords.current.refs[key] = child.getBoundingClientRect()
       }
+
+      // Testing purposes
+      if (__TEST__) {
+        const testRoot = root.current as any
+        testRoot.getChildPosition(key, childCoords.current.refs[key])
+      }
     }
-  }, [root])
+  }, [root, __TEST__])
 
   useEffect(() => {
     if (!root.current) return
@@ -77,7 +83,6 @@ export const useFlipAnimation: UFAHook = ({
     const rootClone = root.current
 
     // eslint-disable-next-line
-    const reportPosition = () => {}
 
     // Update saved DOM position on transition end to prevent
     // "in-flight" positions saved as previous
@@ -91,15 +96,14 @@ export const useFlipAnimation: UFAHook = ({
 
     rootClone.addEventListener('transitionend', onTransitionEnd)
 
-    // Testing purposes
     if (__TEST__) {
-      for (const child of rootClone.children as HTMLCollectionOf<FlipElement>) {
-        child.reportPosition = child.reportPosition || reportPosition
-        const key = child.dataset.id!
-        child.reportPosition({
-          [key]: childCoords.current.refs[key]
-        })
+      const testRoot = root.current as any
+      for (const child of testRoot.children) {
+        childCoords.current.refs[
+          child.dataset.id
+        ] = child.getBoundingClientRect()
       }
+      testRoot.onTransitionEnd(childCoords.current.refs)
     }
 
     return () => rootClone.removeEventListener('transitionend', onTransitionEnd)

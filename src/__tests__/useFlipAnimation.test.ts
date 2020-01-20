@@ -16,16 +16,25 @@ it('Properly stores child state in a ref object', () => {
 
   rootRef.current = {}
 
+  // Collect children information
+  rootRef.current.getChildPosition = (
+    key: string,
+    pos: ClientRect | DOMRect
+  ) => {
+    if (renderNumber <= MAX_RENDERS) {
+      positionByRender[`${key}-${renderNumber}`] = pos
+    }
+  }
+
   // Mock listeners
   rootRef.current.addEventListener = (name, _) => {
     console.log(`${name} successfully added`)
 
-    for (let child of rootRef.current.children!) {
-      const key = child.dataset!.id!
-      child.reportPosition = (pos) => {
-        if (renderNumber <= MAX_RENDERS) {
-          positionByRender[`${key}-${renderNumber}`] = pos[key]
-        }
+    if (name === 'transitionend') {
+      rootRef.current.onTransitionEnd = (positions: Position) => {
+        Object.entries(positions).forEach(([key, val]) => {
+          rootRef.current.getChildPosition!(key, val)
+        })
       }
     }
   }
@@ -54,7 +63,10 @@ it('Properly stores child state in a ref object', () => {
     }
   ]
 
-  const initialDeps = [{ id: 1, val: '1' }, { id: 2, val: '2' }]
+  const initialDeps = [
+    { id: 1, val: '1' },
+    { id: 2, val: '2' }
+  ]
 
   const initialArgs = {
     root: rootRef,
@@ -86,7 +98,10 @@ it('Properly stores child state in a ref object', () => {
     }
   ]
 
-  const nextDeps = [{ id: 2, val: '2' }, { id: 1, val: '1' }]
+  const nextDeps = [
+    { id: 2, val: '2' },
+    { id: 1, val: '1' }
+  ]
 
   renderNumber++
 

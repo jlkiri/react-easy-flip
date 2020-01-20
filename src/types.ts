@@ -27,4 +27,6 @@ export interface TestRef {
   addEventListener?: (name: string, _: any) => void
   removeEventListener?: (name: string, _: any) => void
   children?: ITestElement[]
+  getChildPosition?: (key: string, pos: any) => void
+  onTransitionEnd?: (positions: Position) => void
 }
