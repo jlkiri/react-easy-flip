@@ -14,6 +14,7 @@ export interface UFAHookOptions {
   transition: number
   easing: string
   delay: number
+  transformOrigin: string
 }
 
 export interface UFAHookArguments {

@@ -22,20 +22,30 @@ const itemCollection = [
   { id: 9, text: 'This is random string number 9' }
 ]
 
-function App() {
+const Shuffle = () => {
   const [items, setItems] = useState(itemCollection)
   const verticalRef = useRef(null)
   const horizontalRef = useRef(null)
 
   useFlipAnimation({
     root: verticalRef,
-    opts: { transition: 700, delay: 0, easing: 'ease' },
+    opts: {
+      transition: 700,
+      delay: 0,
+      easing: 'ease',
+      transformOrigin: 'top left'
+    },
     deps: items
   })
 
   useFlipAnimation({
     root: horizontalRef,
-    opts: { transition: 700, delay: 0, easing: 'ease' },
+    opts: {
+      transition: 700,
+      delay: 0,
+      easing: 'ease',
+      transformOrigin: 'top left'
+    },
     deps: items
   })
 
@@ -50,7 +60,7 @@ function App() {
   }
 
   return (
-    <div className="container">
+    <>
       <section>
         <button className="shuffle" onClick={shuffleItems}>
           Shuffle
@@ -77,6 +87,51 @@ function App() {
           )
         })}
       </div>
+    </>
+  )
+}
+
+const SimpleScale = () => {
+  const ref = useRef(null)
+  const [clicked, setClicked] = useState(false)
+
+  useFlipAnimation({
+    root: ref,
+    opts: {
+      transition: 700,
+      delay: 0,
+      easing: 'ease',
+      transformOrigin: 'top left'
+    },
+    deps: clicked
+  })
+
+  return (
+    <div className="square-wrapper" ref={ref}>
+      <div
+        data-id="unique"
+        onClick={() => setClicked(!clicked)}
+        className={`square${clicked ? '--moved' : ''}`}
+      ></div>
+    </div>
+  )
+}
+
+type Examples = { [name: string]: JSX.Element }
+
+const examples: Examples = {
+  none: <div></div>,
+  shuffle: <Shuffle />,
+  simpleScale: <SimpleScale />
+}
+
+function App() {
+  const [example, setExample] = useState('none')
+  return (
+    <div>
+      <button onClick={() => setExample('shuffle')}>Shuffle</button>
+      <button onClick={() => setExample('simpleScale')}>Simple scale</button>
+      <div className="container">{examples[example]}</div>
     </div>
   )
 }

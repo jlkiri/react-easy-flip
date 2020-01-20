@@ -1,10 +1,11 @@
 import { useRef, useEffect, useLayoutEffect } from 'react'
-import { UFAHook, UFAHookOptions, FlipElement } from './types'
+import { UFAHook, UFAHookOptions, FlipElement, UFAHookArguments } from './types'
 
 const DEFAULT_OPTIONS: UFAHookOptions = {
   transition: 500,
   delay: 0,
-  easing: 'ease'
+  easing: 'ease',
+  transformOrigin: 'top left'
 }
 
 const debounce = function debounce<F extends (...args: any[]) => any>(
@@ -18,12 +19,19 @@ const debounce = function debounce<F extends (...args: any[]) => any>(
   }
 }
 
+interface Delta {
+  dx: number
+  dy: number
+  sx: number
+  sy: number
+}
+
 export const useFlipAnimation: UFAHook = ({
   root,
   deps,
   opts = DEFAULT_OPTIONS,
   __TEST__
-}) => {
+}: UFAHookArguments) => {
   const childCoords = useRef({ refs: Object.create(null) })
 
   const transition = opts.transition || DEFAULT_OPTIONS.transition
@@ -114,13 +122,17 @@ export const useFlipAnimation: UFAHook = ({
 
     function play(elem: FlipElement) {
       elem.style.transform = ``
-      elem.style.transition = `transform ${transition}ms ${easing} ${delay}ms`
+      elem.style.transition = `
+        transform ${transition}ms ${easing} ${delay}ms,
+        scale ${transition}ms ${easing} ${delay}ms
+      `
       elem.inFlight = true
     }
 
     function invert(elem: FlipElement) {
-      return function _invert({ dx, dy }: { dx: number; dy: number }) {
-        elem.style.transform = `translate(${dx}px, ${dy}px)`
+      return function _invert({ dx, dy, sx, sy }: Delta) {
+        elem.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`
+        elem.style.transformOrigin = opts.transformOrigin
         elem.style.transition = `transform 0s`
       }
     }
@@ -143,16 +155,18 @@ export const useFlipAnimation: UFAHook = ({
           const rect = child.getBoundingClientRect()
 
           // Calculate delta of old and new DOM positions for transform
-          const prevX = coords.left
-          const prevY = coords.top
+          const translateX = coords.left - rect.left
+          const translateY = coords.top - rect.top
 
-          const nextX = rect.left
-          const nextY = rect.top
+          const scaleX = coords.width / rect.width
+          const scaleY = coords.height / rect.height
 
-          const deltaX = prevX - nextX
-          const deltaY = prevY - nextY
-
-          invert(child)({ dx: deltaX, dy: deltaY })
+          invert(child)({
+            dx: translateX,
+            dy: translateY,
+            sx: scaleX,
+            sy: scaleY
+          })
 
           requestAnimationFrame(() => play(child))
         }

@@ -62,3 +62,21 @@
   background-color: white;
   box-shadow: 0 0 5px 1px rgb(243, 87, 87);
 }
+
+.square-wrapper {
+  position: relative;
+}
+
+.square {
+  height: 100px;
+  width: 100px;
+  background-color: rgb(52, 52, 158);
+}
+
+.square--moved {
+  position: relative;
+  top: 100px;
+  height: 350px;
+  width: 350px;
+  background-color: rgb(52, 52, 158);
+}
