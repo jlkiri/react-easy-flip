@@ -1,7 +1,7 @@
 import { useRef, useEffect, useLayoutEffect } from 'react'
-import { UFAHook, UFAHookOptions, FlipElement, UFAHookArguments } from './types'
+import { UFAHook, FlipElement, UFAHookArguments } from './types'
 
-const DEFAULT_OPTIONS: UFAHookOptions = {
+const DEFAULT_OPTIONS = {
   transition: 500,
   delay: 0,
   easing: 'ease',
@@ -37,6 +37,7 @@ export const useFlipAnimation: UFAHook = ({
   const transition = opts.transition || DEFAULT_OPTIONS.transition
   const delay = opts.delay || DEFAULT_OPTIONS.delay
   const easing = opts.easing || DEFAULT_OPTIONS.easing
+  const transformOrigin = opts.transformOrigin || DEFAULT_OPTIONS.transformOrigin
 
   // Save initial positions
   useLayoutEffect(() => {
@@ -47,22 +48,49 @@ export const useFlipAnimation: UFAHook = ({
     if (!children) return
     if (children.length < 1) return
 
+    function invert(elem: FlipElement) {
+      return function _invert({ dx, dy, sx, sy }: Delta) {
+        elem.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`
+        elem.style.transformOrigin = transformOrigin
+        elem.style.transition = `transform 0s`
+      }
+    }
+
     for (const child of children as HTMLCollectionOf<FlipElement>) {
-      const key = child.dataset.id
+      const flipId = child.dataset.id
 
-      if (!key) return
+      if (!flipId) return
 
-      if (!child.inFlight) {
-        childCoords.current.refs[key] = child.getBoundingClientRect()
+      if (flipId in childCoords.current.refs) {
+        const coords = childCoords.current.refs[flipId]
+        const rect = child.getBoundingClientRect()
+
+        // Calculate delta of old and new DOM positions for transform
+        const translateX = coords.left - rect.left
+        const translateY = coords.top - rect.top
+
+        const scaleX = coords.width / rect.width
+        const scaleY = coords.height / rect.height
+
+        invert(child)({
+          dx: translateX,
+          dy: translateY,
+          sx: scaleX,
+          sy: scaleY
+        })
+      } else {
+        if (!child.inFlight) {
+          childCoords.current.refs[flipId] = child.getBoundingClientRect()
+        }
       }
 
       // Testing purposes
       if (__TEST__) {
         const testRoot = root.current as any
-        testRoot.getChildPosition(key, childCoords.current.refs[key])
+        testRoot.getChildPosition(flipId, childCoords.current.refs[flipId])
       }
     }
-  }, [root, __TEST__])
+  }, [root, deps, transformOrigin, __TEST__])
 
   useEffect(() => {
     if (!root.current) return
@@ -89,8 +117,6 @@ export const useFlipAnimation: UFAHook = ({
     if (!root.current) return
 
     const rootClone = root.current
-
-    // eslint-disable-next-line
 
     // Update saved DOM position on transition end to prevent
     // "in-flight" positions saved as previous
@@ -129,48 +155,12 @@ export const useFlipAnimation: UFAHook = ({
       elem.inFlight = true
     }
 
-    function invert(elem: FlipElement) {
-      return function _invert({ dx, dy, sx, sy }: Delta) {
-        elem.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`
-        elem.style.transformOrigin = opts.transformOrigin
-        elem.style.transition = `transform 0s`
-      }
-    }
-
     const children = root.current.children as HTMLCollectionOf<FlipElement>
 
     if (children.length < 1) return
 
-    // Clone ref content because it is updated faster than rAF executes
-    const childCoordCopy = { ...childCoords.current.refs }
-
     for (const child of children) {
-      requestAnimationFrame(() => {
-        const key = child.dataset.id
-
-        if (!key) return
-
-        if (key in childCoordCopy) {
-          const coords = childCoordCopy[key]
-          const rect = child.getBoundingClientRect()
-
-          // Calculate delta of old and new DOM positions for transform
-          const translateX = coords.left - rect.left
-          const translateY = coords.top - rect.top
-
-          const scaleX = coords.width / rect.width
-          const scaleY = coords.height / rect.height
-
-          invert(child)({
-            dx: translateX,
-            dy: translateY,
-            sx: scaleX,
-            sy: scaleY
-          })
-
-          requestAnimationFrame(() => play(child))
-        }
-      })
+      play(child)
     }
   }, [deps, transition, delay, easing, root])
 }

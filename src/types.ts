@@ -11,15 +11,15 @@ export interface FlipElement extends HTMLElement {
 }
 
 export interface UFAHookOptions {
-  transition: number
-  easing: string
-  delay: number
-  transformOrigin: string
+  transition?: number
+  easing?: string
+  delay?: number
+  transformOrigin?: string
 }
 
 export interface UFAHookArguments {
   root: React.RefObject<HTMLElement>
-  deps?: any
+  deps: any
   opts?: UFAHookOptions
   __TEST__?: boolean
 }
