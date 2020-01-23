@@ -62,3 +62,15 @@
   background-color: white;
   box-shadow: 0 0 5px 1px rgb(243, 87, 87);
 }
+
+.sq {
+  height: 100px;
+  width: 100px;
+  background-color: rgb(131, 42, 131);
+}
+
+.sq--w {
+  height: 100vh;
+  width: 100vw;
+  background-color: rgb(131, 42, 131);
+}
