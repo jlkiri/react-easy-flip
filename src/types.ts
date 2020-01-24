@@ -3,7 +3,14 @@ export type Position = ClientRect | DOMRect
 export type UFG = (args: FlipGroupArgs) => void
 export type USF = (args: SimpleFlipArgs) => void
 
-export type FlipTestElement = Pick<FlipElement, 'reportPosition'> & {
+export type FlipTestElement = Pick<
+  FlipElement,
+  'reportPosition' | 'dataset'
+> & {
+  style: {
+    transform: string
+    transition: string
+  }
   getBoundingClientRect: () => {
     top: number
     left: number

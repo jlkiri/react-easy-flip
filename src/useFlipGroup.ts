@@ -80,8 +80,14 @@ export const useFlipGroup: UFG = ({
     for (const child of flipRoot.current.children as HTMLCollectionOf<
       FlipElement
     >) {
-      const hasTransformsApplied =
-        window.getComputedStyle(child).getPropertyValue('transform') !== 'none'
+      let hasTransformsApplied
+      if (__TEST__) {
+        hasTransformsApplied = true
+      } else {
+        hasTransformsApplied =
+          window.getComputedStyle(child).getPropertyValue('transform') !==
+          'none'
+      }
       if (child.dataset.id && hasTransformsApplied) {
         child.style.transform = ``
         child.style.transition = `
@@ -90,7 +96,7 @@ export const useFlipGroup: UFG = ({
         `
       }
     }
-  }, [flipRoot, delay, easing, transition, deps])
+  }, [flipRoot, delay, easing, transition, deps, __TEST__])
 
   useEffect(() => {
     if (flipRoot.current == null) return
@@ -116,6 +122,8 @@ export const useFlipGroup: UFG = ({
       positions.current[targetKey] = target.getBoundingClientRect()
     }
 
+    rootClone.addEventListener('transitionend', onTransitionEndCb)
+
     if (__TEST__) {
       const testRoot = flipRoot.current as any
       for (const child of testRoot.children as HTMLCollectionOf<FlipElement>) {
@@ -124,10 +132,9 @@ export const useFlipGroup: UFG = ({
       testRoot.onTransitionEnd(positions.current)
     }
 
-    rootClone.addEventListener('transitionend', onTransitionEndCb)
     return () =>
       rootClone.removeEventListener('transitionend', onTransitionEndCb)
-  }, [flipRoot, deps, __TEST__])
+  }, [flipRoot, deps, onTransitionEnd, __TEST__])
 
   useEffect(() => {
     if (!flipRoot.current) return

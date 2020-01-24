@@ -80,8 +80,9 @@ export const useFlipGroup: UFG = ({
     for (const child of flipRoot.current.children as HTMLCollectionOf<
       FlipElement
     >) {
-      const hasTransformsApplied =
-        window.getComputedStyle(child).getPropertyValue('transform') !== 'none'
+      /* const hasTransformsApplied =
+        window.getComputedStyle(child).getPropertyValue('transform') !== 'none' */
+      const hasTransformsApplied = true
       if (child.dataset.id && hasTransformsApplied) {
         child.style.transform = ``
         child.style.transition = `

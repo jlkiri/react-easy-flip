@@ -49,16 +49,24 @@ it('Properly stores child state in a ref object', () => {
       dataset: {
         id: `first`
       },
+      style: {
+        transform: '',
+        transition: ''
+      },
       getBoundingClientRect() {
-        return { top: 0, left: 100 }
+        return { top: 0, left: 100, width: 200, height: 200 }
       }
     },
     {
       dataset: {
         id: `second`
       },
+      style: {
+        transform: '',
+        transition: ''
+      },
       getBoundingClientRect() {
-        return { top: 0, left: 150 }
+        return { top: 0, left: 150, width: 400, height: 400 }
       }
     }
   ]
@@ -69,7 +77,7 @@ it('Properly stores child state in a ref object', () => {
   ]
 
   const initialArgs = {
-    root: rootRef,
+    flipRoot: rootRef,
     deps: initialDeps,
     opts: { transition: 0, delay: 0, easing: 'ease' },
     __TEST__: true
@@ -84,16 +92,24 @@ it('Properly stores child state in a ref object', () => {
       dataset: {
         id: `second`
       },
+      style: {
+        transform: '',
+        transition: ''
+      },
       getBoundingClientRect() {
-        return { top: 0, left: 100 }
+        return { top: 0, left: 100, width: 400, height: 400 }
       }
     },
     {
       dataset: {
         id: `first`
       },
+      style: {
+        transform: '',
+        transition: ''
+      },
       getBoundingClientRect() {
-        return { top: 0, left: 150 }
+        return { top: 0, left: 150, width: 200, height: 200 }
       }
     }
   ]
@@ -106,7 +122,7 @@ it('Properly stores child state in a ref object', () => {
   renderNumber++
 
   const nextArgs = {
-    root: rootRef,
+    flipRoot: rootRef,
     deps: nextDeps,
     opts: { transition: 0, delay: 0, easing: 'ease' },
     __TEST__: true
