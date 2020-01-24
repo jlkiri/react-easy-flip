@@ -2,8 +2,16 @@ export type Positions = { [x: string]: ClientRect | DOMRect }
 export type Position = ClientRect | DOMRect
 export type UFG = (args: FlipGroupArgs) => void
 export type USF = (args: SimpleFlipArgs) => void
+export type UST = (args: SharedTransitionArgs) => void
 
-export type FlipTestElement = Pick<FlipElement, 'reportPosition'> & {
+export type FlipTestElement = Pick<
+  FlipElement,
+  'reportPosition' | 'dataset'
+> & {
+  style: {
+    transform: string
+    transition: string
+  }
   getBoundingClientRect: () => {
     top: number
     left: number
@@ -17,7 +25,7 @@ export interface FlipElement extends HTMLElement {
 }
 
 export interface FlipOptions {
-  transition?: number
+  duration?: number
   easing?: string
   delay?: number
   transformOrigin?: string
@@ -34,6 +42,14 @@ export interface FlipGroupArgs {
 export interface SimpleFlipArgs {
   flipRef: React.RefObject<HTMLElement>
   flag: boolean
+  opts?: FlipOptions
+  __TEST__?: boolean
+}
+
+export interface SharedTransitionArgs {
+  flipId: string
+  dep: boolean
+  onTransitionEnd?: () => void
   opts?: FlipOptions
   __TEST__?: boolean
 }

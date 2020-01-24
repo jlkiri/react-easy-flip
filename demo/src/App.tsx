@@ -16,7 +16,11 @@ function SharedTransitionApp() {
 
   const flipId = 'test'
 
-  useSharedElementTransition(flipId, clicked, onTransitionEnd)
+  useSharedElementTransition({
+    flipId,
+    dep: clicked,
+    onTransitionEnd: onTransitionEnd
+  })
 
   function handleClick() {
     setClicked(!clicked)

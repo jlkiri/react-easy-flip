@@ -1,5 +1,5 @@
 export const DEFAULT_OPTIONS = {
-  transition: 700,
+  duration: 700,
   delay: 0,
   easing: 'ease',
   transformOrigin: 'top left'

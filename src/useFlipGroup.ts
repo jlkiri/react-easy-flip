@@ -24,7 +24,7 @@ export const useFlipGroup: UFG = ({
   const positions = useRef<Positions | null>(null)
   const oldDepsRef = useRef<any>(deps)
 
-  const transition = opts.transition || DEFAULT_OPTIONS.transition
+  const duration = opts.duration || DEFAULT_OPTIONS.duration
   const delay = opts.delay || DEFAULT_OPTIONS.delay
   const easing = opts.easing || DEFAULT_OPTIONS.easing
   const transformOrigin =
@@ -91,12 +91,12 @@ export const useFlipGroup: UFG = ({
       if (child.dataset.id && hasTransformsApplied) {
         child.style.transform = ``
         child.style.transition = `
-          transform ${transition}ms ${easing} ${delay}ms,
-          scale ${transition}ms ${easing} ${delay}ms
+          transform ${duration}ms ${easing} ${delay}ms,
+          scale ${duration}ms ${easing} ${delay}ms
         `
       }
     }
-  }, [flipRoot, delay, easing, transition, deps, __TEST__])
+  }, [flipRoot, delay, easing, duration, deps, __TEST__])
 
   useEffect(() => {
     if (flipRoot.current == null) return

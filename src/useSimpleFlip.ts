@@ -11,7 +11,7 @@ export const useSimpleFlip: USF = ({
 }) => {
   const positions = useRef<Position | null>(null)
 
-  const transition = opts.transition || DEFAULT_OPTIONS.transition
+  const duration = opts.duration || DEFAULT_OPTIONS.duration
   const delay = opts.delay || DEFAULT_OPTIONS.delay
   const easing = opts.easing || DEFAULT_OPTIONS.easing
   const transformOrigin =
@@ -38,7 +38,7 @@ export const useSimpleFlip: USF = ({
     if (flipRef.current == null) return
     if (flag) {
       flipRef.current.style.transform = ``
-      flipRef.current.style.transition = `all ${transition}ms ${easing} ${delay}ms`
+      flipRef.current.style.transition = `all ${duration}ms ${easing} ${delay}ms`
     }
-  }, [flipRef, flag, delay, easing, transition])
+  }, [flipRef, flag, delay, easing, duration])
 }

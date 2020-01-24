@@ -50,8 +50,6 @@ export const useSharedElementTransition: UST = ({
     el.style.transform = ``
     el.style.transition = `3s`
 
-    console.log('aaaaa')
-
     el.addEventListener('transitionend', onTransitionEndCb)
     return () => el.removeEventListener('transitionend', onTransitionEndCb)
   }, [flipId, _onTransitionEnd, dep])
