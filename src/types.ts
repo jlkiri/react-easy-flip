@@ -1,32 +1,47 @@
-export type Position = { [x: string]: ClientRect | DOMRect }
-export type UFAHook = (args: UFAHookArguments) => void
-export type ITestElement = Pick<
-  FlipElement,
-  'reportPosition' | 'dataset' | 'inFlight'
-> & { getBoundingClientRect: () => { top: number; left: number } }
+export type Positions = { [x: string]: ClientRect | DOMRect }
+export type Position = ClientRect | DOMRect
+export type UFG = (args: FlipGroupArgs) => void
+export type USF = (args: SimpleFlipArgs) => void
+
+export type FlipTestElement = Pick<FlipElement, 'reportPosition'> & {
+  getBoundingClientRect: () => {
+    top: number
+    left: number
+    width: number
+    height: number
+  }
+}
 
 export interface FlipElement extends HTMLElement {
-  reportPosition?: (arg: Position) => void
-  inFlight?: boolean
+  reportPosition?: (arg: Positions) => void
 }
 
-export interface UFAHookOptions {
-  transition: number
-  easing: string
-  delay: number
+export interface FlipOptions {
+  transition?: number
+  easing?: string
+  delay?: number
+  transformOrigin?: string
 }
 
-export interface UFAHookArguments {
-  root: React.RefObject<HTMLElement>
-  deps?: any
-  opts?: UFAHookOptions
+export interface FlipGroupArgs {
+  flipRoot: React.RefObject<HTMLElement>
+  deps: any
+  onTransitionEnd?: () => void
+  opts?: FlipOptions
+  __TEST__?: boolean
+}
+
+export interface SimpleFlipArgs {
+  flipRef: React.RefObject<HTMLElement>
+  flag: boolean
+  opts?: FlipOptions
   __TEST__?: boolean
 }
 
 export interface TestRef {
   addEventListener?: (name: string, _: any) => void
   removeEventListener?: (name: string, _: any) => void
-  children?: ITestElement[]
+  children?: FlipTestElement[]
   getChildPosition?: (key: string, pos: any) => void
-  onTransitionEnd?: (positions: Position) => void
+  onTransitionEnd?: (positions: Positions) => void
 }

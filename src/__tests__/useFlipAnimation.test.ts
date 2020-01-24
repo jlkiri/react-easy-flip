@@ -3,14 +3,14 @@
 
 import { renderHook } from '@testing-library/react-hooks'
 import React from 'react'
-import { useFlipAnimation } from '../useFlipAnimation'
-import { TestRef, Position } from '../types'
+import { useFlipGroup } from '../useFlipGroup'
+import { TestRef, Positions } from '../types'
 
 it('Properly stores child state in a ref object', () => {
   const MAX_RENDERS = 2
 
   const rootRef = React.createRef() as React.MutableRefObject<TestRef>
-  const positionByRender: Position = {}
+  const positionByRender: Positions = {}
 
   let renderNumber = 1
 
@@ -31,7 +31,7 @@ it('Properly stores child state in a ref object', () => {
     console.log(`${name} successfully added`)
 
     if (name === 'transitionend') {
-      rootRef.current.onTransitionEnd = (positions: Position) => {
+      rootRef.current.onTransitionEnd = (positions: Positions) => {
         Object.entries(positions).forEach(([key, val]) => {
           rootRef.current.getChildPosition!(key, val)
         })
@@ -75,7 +75,7 @@ it('Properly stores child state in a ref object', () => {
     __TEST__: true
   }
 
-  const { rerender } = renderHook((args) => useFlipAnimation(args as any), {
+  const { rerender } = renderHook((args) => useFlipGroup(args as any), {
     initialProps: initialArgs
   })
 
