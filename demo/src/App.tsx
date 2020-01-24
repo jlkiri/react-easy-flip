@@ -6,44 +6,63 @@ import { useSharedElementTransition } from './useSharedTransition'
 
 const noop = () => {}
 
+const items = [
+  { id: 'woekfow' },
+  { id: 'owkefowkoef' },
+  { id: 'owkwefwkoef' },
+  { id: 'owogwg9oef' },
+  { id: 'ow28urf8280ef' },
+  { id: '238yfh928' },
+  { id: '23r9u90j2f2' },
+  { id: 'fj8h27yf82' }
+]
+
 function SharedTransitionApp() {
   const [clicked, setClicked] = useState(false)
+  const [id, setId] = useState('')
   const [isTransitionOver, setisTransitionOver] = useState(false)
 
   const onTransitionEnd = useCallback(() => {
     setisTransitionOver(!isTransitionOver)
   }, [isTransitionOver])
 
-  const flipId = 'test'
-
   useSharedElementTransition({
-    flipId,
+    flipId: id,
     dep: clicked,
     onTransitionEnd: onTransitionEnd
   })
 
-  function handleClick() {
+  function handleClick(id: string) {
+    setId(id)
     setClicked(!clicked)
   }
 
   if (!clicked) {
     return (
       <>
-        <div
-          id={flipId}
-          onClick={isTransitionOver ? noop : handleClick}
-          className={'sq'}
-        ></div>
+        {items.map((item, i) => {
+          return (
+            <div
+              id={item.id}
+              onClick={isTransitionOver ? noop : () => handleClick(item.id)}
+              className={'minisq'}
+            >
+              <div data-reverseId={i} className={'circle'}></div>
+            </div>
+          )
+        })}
       </>
     )
   }
 
   return (
     <section
-      id={flipId}
-      onClick={isTransitionOver ? handleClick : noop}
-      className={'sq--w'}
-    ></section>
+      id={id}
+      onClick={isTransitionOver ? () => handleClick(id) : noop}
+      className={'bigsq'}
+    >
+      <div className={'circle'}></div>
+    </section>
   )
 }
 

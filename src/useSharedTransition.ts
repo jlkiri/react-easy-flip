@@ -30,16 +30,18 @@ export const useSharedElementTransition: UST = ({
     if (positions.current == null) return
 
     const nextRect = el.getBoundingClientRect()
+    const currentRect = positions.current
+    positions.current = nextRect
 
-    const { scaleX, scaleY } = invertScale(positions.current, nextRect)
-    const { translateX, translateY } = invertXY(positions.current, nextRect)
+    const { scaleX, scaleY } = invertScale(currentRect, nextRect)
+    const { translateX, translateY } = invertXY(currentRect, nextRect)
+
     el.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
-    el.style.transformOrigin = 'top left'
-  }, [flipId, dep])
+    el.style.transformOrigin = transformOrigin
+  }, [flipId, transformOrigin, dep])
 
   useEffect(() => {
     function onTransitionEndCb(e: any) {
-      positions.current = e.target.getBoundingClientRect()
       _onTransitionEnd()
     }
 
@@ -48,9 +50,12 @@ export const useSharedElementTransition: UST = ({
     if (positions.current == null) return
 
     el.style.transform = ``
-    el.style.transition = `3s`
+    el.style.transition = `
+      transform ${duration}ms ${easing} ${delay}ms,
+      scale ${duration}ms ${easing} ${delay}ms
+    `
 
     el.addEventListener('transitionend', onTransitionEndCb)
     return () => el.removeEventListener('transitionend', onTransitionEndCb)
-  }, [flipId, _onTransitionEnd, dep])
+  }, [flipId, duration, easing, delay, _onTransitionEnd, dep])
 }

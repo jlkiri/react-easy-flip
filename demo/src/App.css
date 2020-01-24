@@ -69,6 +69,33 @@
   background-color: rgb(131, 42, 131);
 }
 
+.minisq {
+  height: 100px;
+  width: 100px;
+  padding: 10px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+  background-color: rgb(131, 42, 131);
+}
+
+.circle {
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+  background-color: yellow;
+}
+
+.bigsq {
+  height: 100vh;
+  width: 100vw;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(131, 42, 131);
+}
+
 .sq--w {
   height: 100vh;
   width: 100vw;
