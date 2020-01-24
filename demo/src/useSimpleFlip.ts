@@ -6,8 +6,7 @@ import { invertScale, invertXY } from './helpers'
 export const useSimpleFlip: USF = ({
   flipRef,
   flag,
-  opts = DEFAULT_OPTIONS,
-  __TEST__ = false
+  opts = DEFAULT_OPTIONS
 }) => {
   const positions = useRef<Position | null>(null)
 

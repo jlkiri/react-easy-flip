@@ -1,63 +1,12 @@
-import React, {
-  useRef,
-  useCallback,
-  useEffect,
-  useState,
-  useLayoutEffect
-} from 'react'
+import React, { useRef, useCallback, useState, useEffect } from 'react'
 import './App.css'
 import { useFlipGroup } from './useFlipGroup'
 import { useSimpleFlip } from './useSimpleFlip'
+import { useSharedElementTransition } from './useSharedTransition'
 
 const noop = () => {}
 
-type UST = (...args: any) => any
-
-const useSharedElementTransition: UST = (
-  origin,
-  target,
-  dep,
-  onTransitionEnd
-) => {
-  const dms = useRef<any>()
-
-  useLayoutEffect(() => {
-    dms.current = origin.current.getBoundingClientRect()
-    // dms.current.target = target.current.getBoundingClientRect();
-  }, [origin])
-
-  useLayoutEffect(() => {
-    console.log(target)
-    if (target.current) {
-      console.log('layout phase')
-      target.current.style.transformOrigin = 'top left'
-      const pw = dms.current.width
-      const ph = dms.current.height
-      const nw = target.current.getBoundingClientRect().width
-      const nh = target.current.getBoundingClientRect().height
-      target.current.style.transform = `scale(${pw / nw}, ${ph / nh})`
-    }
-  }, [origin, target, dep])
-
-  useEffect(() => {
-    function onTransitionEndCb(e: any) {
-      dms.current = e.target.getBoundingClientRect()
-      onTransitionEnd()
-    }
-
-    if (target.current) {
-      console.log('play phase')
-      target.current.style.transform = ``
-      target.current.style.transition = `3s`
-      target.current.isPlaying = true
-      target.current.addEventListener('transitionend', onTransitionEndCb)
-    }
-  }, [target, onTransitionEnd, dep])
-}
-
 function SharedTransitionApp() {
-  const originRef = useRef(null)
-  const targetRef = useRef(null)
   const [clicked, setClicked] = useState(false)
   const [isTransitionOver, setisTransitionOver] = useState(false)
 
@@ -65,27 +14,30 @@ function SharedTransitionApp() {
     setisTransitionOver(!isTransitionOver)
   }, [isTransitionOver])
 
-  useSharedElementTransition(originRef, targetRef, clicked, onTransitionEnd)
+  const flipId = 'test'
+
+  useSharedElementTransition(flipId, clicked, onTransitionEnd)
 
   function handleClick() {
-    console.log('clicked')
     setClicked(!clicked)
   }
 
   if (!clicked) {
     return (
-      <div
-        onClick={isTransitionOver ? () => noop : handleClick}
-        ref={isTransitionOver ? targetRef : originRef}
-        className={'sq'}
-      ></div>
+      <>
+        <div
+          id={flipId}
+          onClick={isTransitionOver ? noop : handleClick}
+          className={'sq'}
+        ></div>
+      </>
     )
   }
 
   return (
     <section
+      id={flipId}
       onClick={isTransitionOver ? handleClick : noop}
-      ref={isTransitionOver ? originRef : targetRef}
       className={'sq--w'}
     ></section>
   )
@@ -187,4 +139,4 @@ function App() {
   )
 }
 
-export default App
+export default SharedTransitionApp
