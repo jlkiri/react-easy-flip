@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState, useEffect } from 'react'
+import React, { useRef, useCallback, useState } from 'react'
 import './App.css'
 import { useFlipGroup } from './useFlipGroup'
 import { useSimpleFlip } from './useSimpleFlip'
@@ -24,6 +24,7 @@ function SharedTransitionApp() {
 
   const onTransitionEnd = useCallback(() => {
     setisTransitionOver(!isTransitionOver)
+    isTransitionOver && console.log('clickable now!')
   }, [isTransitionOver])
 
   useSharedElementTransition({
@@ -47,7 +48,9 @@ function SharedTransitionApp() {
               onClick={isTransitionOver ? noop : () => handleClick(item.id)}
               className={'minisq'}
             >
-              <div data-reverseId={i} className={'circle'}></div>
+              <div className={'circle'}>
+                <div className="innerCircle"></div>
+              </div>
             </div>
           )
         })}
@@ -61,7 +64,9 @@ function SharedTransitionApp() {
       onClick={isTransitionOver ? () => handleClick(id) : noop}
       className={'bigsq'}
     >
-      <div className={'circle'}></div>
+      <div className={'circle'}>
+        <div className="innerCircle"></div>
+      </div>
     </section>
   )
 }
@@ -70,7 +75,6 @@ function SimpleFlipApp() {
   const ref = useRef(null)
   const [clicked, setClicked] = useState(false)
 
-  //useSimpleFlip(ref, clicked)
   useSimpleFlip({ flipRef: ref, flag: clicked })
 
   function handleClick() {

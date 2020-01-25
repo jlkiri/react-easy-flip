@@ -77,14 +77,21 @@
   justify-content: center;
   align-items: center;
   margin: 10px;
-  background-color: rgb(131, 42, 131);
+  background-color: black;
 }
 
 .circle {
+  height: 70px;
+  width: 70px;
+  border-radius: 50%;
+  background-color: yellow;
+}
+
+.innerCircle {
   height: 50px;
   width: 50px;
   border-radius: 50%;
-  background-color: yellow;
+  background-color: black;
 }
 
 .bigsq {
@@ -93,7 +100,7 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  background-color: rgb(131, 42, 131);
+  background-color: black;
 }
 
 .sq--w {

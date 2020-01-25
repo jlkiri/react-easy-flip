@@ -14,20 +14,21 @@ export const useSharedElementTransition: UST = ({
   opts = DEFAULT_OPTIONS,
 }) => {
   const positions = useRef<Position | null>(null)
-  const currChildren = useRef<HTMLCollection | null>(null)
+  const childPos = useRef<Position | null>(null)
   const prevFlipId = useRef<string | null>(flipId)
+  const isPlaying = useRef<boolean>(false)
 
   const initialEl = document.getElementById(flipId)
+
   if (initialEl && !positions.current) {
     positions.current = initialEl.getBoundingClientRect()
-    currChildren.current = initialEl.children
+    childPos.current = initialEl.firstElementChild && initialEl.firstElementChild.getBoundingClientRect()
   }
-
-  console.log(positions.current)
 
   if (prevFlipId.current && prevFlipId.current !== flipId) {
     const el = document.getElementById(flipId)
     positions.current = el ? el.getBoundingClientRect() : null
+    childPos.current = el ? el.children[0].getBoundingClientRect() : null
   }
 
   const duration = opts.duration || DEFAULT_OPTIONS.duration
@@ -48,55 +49,62 @@ export const useSharedElementTransition: UST = ({
     if (positions.current == null) return
 
     const nextRect = el.getBoundingClientRect()
-    // const antiDistortionContainer = document.createElement('div');
-    const nextChildren = el.children as HTMLCollectionOf<HTMLElement>
     const currentRect = positions.current
     positions.current = nextRect
 
     const { scaleX, scaleY } = invertScale(currentRect, nextRect)
     const { translateX, translateY } = invertXY(currentRect, nextRect)
     el.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
-    el.style.transformOrigin = transformOrigin
+    el.style.transformOrigin = transformOrigin;
 
-    if (currChildren.current) {
-      for (const child of currChildren.current as HTMLCollectionOf<HTMLElement>) {
-        const nextChild = Array.from(nextChildren).find(c => c.dataset.reverseId === child.dataset.reverseId)
-        if (nextChild) {
-          // const { scaleX, scaleY } = invertScale(child.get, nextChild)
-          const { translateX, translateY } = invertXY(currentRect, nextRect)
-        }
-        // child.style.transform = `scale(${-scaleX}, ${scaleY})``
-      }
-    }
+    const child = el.firstElementChild as HTMLElement
+    const rScaleX = 1 / scaleX
+    const rScaleY = 1 / scaleY
+    child.style.transform = `scale(${rScaleX}, ${rScaleY})`
 
   }, [flipId, dep, transformOrigin])
 
   useEffect(() => {
-    function onTransitionEndCb(e: any) {
-      positions.current = e.target.getBoundingClientRect()
-      _onTransitionEnd()
+    let raf: any
+
+    function onTransitionEndCb(this: any, e: any) {
+      // Prevent handling of bubbled events from children
+      if (e.target === this) {
+        _onTransitionEnd()
+        isPlaying.current = false
+      } else {
+        childPos.current = e.target.getBoundingClientRect()
+      }
+      cancelAnimationFrame(raf)
     }
 
     const el = document.getElementById(flipId)
     if (!el) return
     if (positions.current == null) return
 
+    isPlaying.current = true
+
     el.style.transform = ``
     el.style.transition = `
-        transform ${ duration} ms ${easing} ${delay} ms,
-          scale ${ duration} ms ${easing} ${delay} ms
-            `
+      transform ${duration}ms ${easing} ${delay}ms
+    `;
 
-    const children = el.children
-
-    for (const child of children as HTMLCollectionOf<HTMLElement>) {
-      child.style.transform = ``
-      child.style.transition = `
-        scale ${ duration} ms ${easing} ${delay} ms
-          `
+    function rescaleChild() {
+      const nextRect = el!.getBoundingClientRect()
+      const child = el!.children[0] as HTMLElement
+      const { scaleX, scaleY } = invertScale(nextRect, positions.current!)
+      const rScaleX = 1 / scaleX
+      const rScaleY = 1 / scaleY
+      child.style.transform = `scale(${rScaleX}, ${rScaleY})`
+      requestAnimationFrame(rescaleChild)
     }
 
+    raf = requestAnimationFrame(rescaleChild)
+
     el.addEventListener('transitionend', onTransitionEndCb)
-    return () => el.removeEventListener('transitionend', onTransitionEndCb)
+    return () => {
+      el.removeEventListener('transitionend', onTransitionEndCb)
+      cancelAnimationFrame(raf)
+    }
   }, [flipId, duration, easing, delay, _onTransitionEnd, dep])
 }
