@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect } from 'react'
 import { invertScale } from './helpers'
 
 export const usePreserveScale = (flipId: any, pscale: any, target: any, dep: any) => {
-
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
@@ -18,7 +17,7 @@ export const usePreserveScale = (flipId: any, pscale: any, target: any, dep: any
     let raf: any
     const el = document.getElementById(flipId)
     if (!el) return
-    if (target == null) return
+    if (target.current == null) return
     function rescaleChild() {
       const inProgressRect = el!.getBoundingClientRect()
       for (const child of el!.children as HTMLCollectionOf<HTMLElement>) {
@@ -29,7 +28,6 @@ export const usePreserveScale = (flipId: any, pscale: any, target: any, dep: any
         requestAnimationFrame(rescaleChild)
       }
     }
-
     raf = requestAnimationFrame(rescaleChild)
     return () => cancelAnimationFrame(raf)
   }, [flipId, target, dep])

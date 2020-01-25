@@ -46,8 +46,9 @@ export const useSimpleFlip: USF = ({
 
     parentScale.current = { scaleX, scaleY }
 
+    el.style.transition = ``
     el.style.transform = `
-        translate(${translateX}px, ${translateY}px)`
+        translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
     el.style.transformOrigin = transformOrigin
   }, [flipId, flag, transformOrigin])
 
@@ -57,8 +58,8 @@ export const useSimpleFlip: USF = ({
     if (startPosition.current == null) return
 
     el.style.transform = ``
-    el.style.transition = `all ${duration}ms ${easing} ${delay}ms`
+    el.style.transition = `transform ${duration}ms ${easing} ${delay}ms`
   }, [flipId, flag, delay, easing, duration])
 
-  // usePreserveScale(flipId, parentScale, startPosition, flag)
+  usePreserveScale(flipId, parentScale, startPosition, flag)
 }

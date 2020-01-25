@@ -107,7 +107,7 @@ function SimpleFlipApp() {
   const flipId2 = 'circle'
 
   useSimpleFlip({ flipId, flag: clicked })
-  useSimpleFlip({ flipId: flipId2, flag: clicked })
+  // useSimpleFlip({ flipId: flipId2, flag: clicked })
 
   function handleClick() {
     setClicked(!clicked)
