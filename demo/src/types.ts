@@ -32,7 +32,7 @@ export interface FlipOptions {
 }
 
 export interface FlipGroupArgs {
-  flipRoot: React.RefObject<HTMLElement>
+  flipId: string
   deps: any
   onTransitionEnd?: () => void
   opts?: FlipOptions
@@ -40,7 +40,7 @@ export interface FlipGroupArgs {
 }
 
 export interface SimpleFlipArgs {
-  flipRef: React.RefObject<HTMLElement>
+  flipId: string
   flag: boolean
   opts?: FlipOptions
   __TEST__?: boolean

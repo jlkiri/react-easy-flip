@@ -71,11 +71,43 @@ function SharedTransitionApp() {
   )
 }
 
-function SimpleFlipApp() {
+function SimpleFlipApp2() {
   const ref = useRef(null)
   const [clicked, setClicked] = useState(false)
 
-  useSimpleFlip({ flipRef: ref, flag: clicked })
+  let abc = ['A', 'B', 'C', 'D', 'E', 'F']
+  // useSimpleFlip({ flipRef: ref, flag: clicked })
+  // useFlipGroup({ flipRoot: ref, deps: clicked })
+
+  function handleClick() {
+    setClicked(!clicked)
+  }
+
+  abc = clicked ? abc.reverse() : abc
+
+  return (
+    <div
+      ref={ref}
+      onClick={handleClick}
+      className={clicked ? 'vertical' : 'horizontal'}
+    >
+      {abc.map((l, i) => (
+        <div data-id={l} key={i} className="letter">
+          {l}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SimpleFlipApp() {
+  const [clicked, setClicked] = useState(false)
+
+  const flipId = 'simple'
+  const flipId2 = 'circle'
+
+  useSimpleFlip({ flipId, flag: clicked })
+  useSimpleFlip({ flipId: flipId2, flag: clicked })
 
   function handleClick() {
     setClicked(!clicked)
@@ -83,10 +115,12 @@ function SimpleFlipApp() {
 
   return (
     <div
-      ref={ref}
+      id={flipId}
       onClick={handleClick}
       className={'sq' + (clicked ? '--w' : '')}
-    ></div>
+    >
+      <div id={flipId2} className="circle"></div>
+    </div>
   )
 }
 
@@ -113,13 +147,19 @@ const itemCollection = [
 function App() {
   const [items, setItems] = useState(itemCollection)
   const [buttonClickable, setButtonClickable] = useState(true)
-  const verticalRef = useRef(null)
+
+  const flipId = 'flipRoot'
 
   const onTransitionEnd = useCallback(() => {
     setButtonClickable(true)
   }, [])
 
-  useFlipGroup({ flipRoot: verticalRef, onTransitionEnd, deps: items })
+  useFlipGroup({
+    flipId,
+    opts: { duration: 500 },
+    onTransitionEnd,
+    deps: items
+  })
 
   const shuffleItems = function shuffleItems() {
     const result = shuffle([...items])
@@ -153,7 +193,7 @@ function App() {
           Sort
         </button>
       </section>
-      <div ref={verticalRef} className="vroot">
+      <div id={flipId} className="vroot">
         {items.map((item) => {
           return (
             <div className={'vitem'} data-id={item.id} key={item.id}>
@@ -166,4 +206,4 @@ function App() {
   )
 }
 
-export default SharedTransitionApp
+export default SimpleFlipApp

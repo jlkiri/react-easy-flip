@@ -2,13 +2,27 @@ import { useRef, useEffect, useLayoutEffect } from 'react'
 import { Position, USF } from './types'
 import { DEFAULT_OPTIONS } from './const'
 import { invertScale, invertXY } from './helpers'
+import { usePreserveScale } from './usePreserveScale'
 
 export const useSimpleFlip: USF = ({
-  flipRef,
+  flipId,
   flag,
   opts = DEFAULT_OPTIONS
 }) => {
-  const positions = useRef<Position | null>(null)
+  const startPosition = useRef<Position | null>(null)
+  const prevFlipId = useRef<string | null>(flipId)
+  const parentScale = useRef<any>(null)
+
+  const initialEl = document.getElementById(flipId)
+
+  if (initialEl && !startPosition.current) {
+    startPosition.current = initialEl.getBoundingClientRect()
+  }
+
+  if (prevFlipId.current && prevFlipId.current !== flipId) {
+    const el = document.getElementById(flipId)
+    startPosition.current = el ? el.getBoundingClientRect() : null
+  }
 
   const duration = opts.duration || DEFAULT_OPTIONS.duration
   const delay = opts.delay || DEFAULT_OPTIONS.delay
@@ -16,28 +30,35 @@ export const useSimpleFlip: USF = ({
   const transformOrigin =
     opts.transformOrigin || DEFAULT_OPTIONS.transformOrigin
 
-  useLayoutEffect(() => {
-    if (flipRef.current == null) return
-    positions.current = flipRef.current.getBoundingClientRect()
-  }, [flipRef])
+  useEffect(() => {
+    prevFlipId.current = flipId
+  })
 
   useLayoutEffect(() => {
-    if (positions.current == null || flipRef.current == null) return
-    if (flag) {
-      const rect = flipRef.current.getBoundingClientRect()
-      const { scaleX, scaleY } = invertScale(positions.current, rect)
-      const { translateX, translateY } = invertXY(positions.current, rect)
-      flipRef.current.style.transform = `
-        translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
-      flipRef.current.style.transformOrigin = transformOrigin
-    }
-  }, [flipRef, flag, transformOrigin])
+    const el = document.getElementById(flipId)
+    if (!el) return
+    if (startPosition.current == null) return
+
+    const rect = el.getBoundingClientRect()
+    const { scaleX, scaleY } = invertScale(startPosition.current, rect)
+    const { translateX, translateY } = invertXY(startPosition.current, rect)
+    startPosition.current = rect
+
+    parentScale.current = { scaleX, scaleY }
+
+    el.style.transform = `
+        translate(${translateX}px, ${translateY}px)`
+    el.style.transformOrigin = transformOrigin
+  }, [flipId, flag, transformOrigin])
 
   useEffect(() => {
-    if (flipRef.current == null) return
-    if (flag) {
-      flipRef.current.style.transform = ``
-      flipRef.current.style.transition = `all ${duration}ms ${easing} ${delay}ms`
-    }
-  }, [flipRef, flag, delay, easing, duration])
+    const el = document.getElementById(flipId)
+    if (!el) return
+    if (startPosition.current == null) return
+
+    el.style.transform = ``
+    el.style.transition = `all ${duration}ms ${easing} ${delay}ms`
+  }, [flipId, flag, delay, easing, duration])
+
+  // usePreserveScale(flipId, parentScale, startPosition, flag)
 }

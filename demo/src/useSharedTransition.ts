@@ -2,33 +2,29 @@ import { useRef, useEffect, useLayoutEffect } from 'react'
 import { invertScale, invertXY } from './helpers'
 import { DEFAULT_OPTIONS } from './const'
 import { Position, UST } from './types'
+import { usePreserveScale } from './usePreserveScale'
 
 const noop = () => { }
-
-// TODO: Prevent children warp for BOTH useShared and useFlipGroup
 
 export const useSharedElementTransition: UST = ({
   flipId,
   dep,
   onTransitionEnd,
-  opts = DEFAULT_OPTIONS,
+  opts = DEFAULT_OPTIONS
 }) => {
-  const positions = useRef<Position | null>(null)
-  const childPos = useRef<Position | null>(null)
+  const startPositions = useRef<Position | null>(null)
   const prevFlipId = useRef<string | null>(flipId)
-  const isPlaying = useRef<boolean>(false)
+  const parentScale = useRef<any>(null)
 
   const initialEl = document.getElementById(flipId)
 
-  if (initialEl && !positions.current) {
-    positions.current = initialEl.getBoundingClientRect()
-    childPos.current = initialEl.firstElementChild && initialEl.firstElementChild.getBoundingClientRect()
+  if (initialEl && !startPositions.current) {
+    startPositions.current = initialEl.getBoundingClientRect()
   }
 
   if (prevFlipId.current && prevFlipId.current !== flipId) {
     const el = document.getElementById(flipId)
-    positions.current = el ? el.getBoundingClientRect() : null
-    childPos.current = el ? el.children[0].getBoundingClientRect() : null
+    startPositions.current = el ? el.getBoundingClientRect() : null
   }
 
   const duration = opts.duration || DEFAULT_OPTIONS.duration
@@ -46,22 +42,20 @@ export const useSharedElementTransition: UST = ({
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (positions.current == null) return
+    if (startPositions.current == null) return
 
-    const nextRect = el.getBoundingClientRect()
-    const currentRect = positions.current
-    positions.current = nextRect
+    const targetRect = el.getBoundingClientRect()
+    const startRect = startPositions.current
+    startPositions.current = targetRect
 
-    const { scaleX, scaleY } = invertScale(currentRect, nextRect)
-    const { translateX, translateY } = invertXY(currentRect, nextRect)
+    const { scaleX, scaleY } = invertScale(startRect, targetRect)
+
+    // Save scale values of a parent to be used by usePreserveScale hook
+    parentScale.current = { scaleX, scaleY }
+
+    const { translateX, translateY } = invertXY(startRect, targetRect)
     el.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
-    el.style.transformOrigin = transformOrigin;
-
-    const child = el.firstElementChild as HTMLElement
-    const rScaleX = 1 / scaleX
-    const rScaleY = 1 / scaleY
-    child.style.transform = `scale(${rScaleX}, ${rScaleY})`
-
+    el.style.transformOrigin = transformOrigin
   }, [flipId, dep, transformOrigin])
 
   useEffect(() => {
@@ -71,35 +65,18 @@ export const useSharedElementTransition: UST = ({
       // Prevent handling of bubbled events from children
       if (e.target === this) {
         _onTransitionEnd()
-        isPlaying.current = false
-      } else {
-        childPos.current = e.target.getBoundingClientRect()
       }
       cancelAnimationFrame(raf)
     }
 
     const el = document.getElementById(flipId)
     if (!el) return
-    if (positions.current == null) return
-
-    isPlaying.current = true
+    if (startPositions.current == null) return
 
     el.style.transform = ``
     el.style.transition = `
       transform ${duration}ms ${easing} ${delay}ms
-    `;
-
-    function rescaleChild() {
-      const nextRect = el!.getBoundingClientRect()
-      const child = el!.children[0] as HTMLElement
-      const { scaleX, scaleY } = invertScale(nextRect, positions.current!)
-      const rScaleX = 1 / scaleX
-      const rScaleY = 1 / scaleY
-      child.style.transform = `scale(${rScaleX}, ${rScaleY})`
-      requestAnimationFrame(rescaleChild)
-    }
-
-    raf = requestAnimationFrame(rescaleChild)
+    `
 
     el.addEventListener('transitionend', onTransitionEndCb)
     return () => {
@@ -107,4 +84,7 @@ export const useSharedElementTransition: UST = ({
       cancelAnimationFrame(raf)
     }
   }, [flipId, duration, easing, delay, _onTransitionEnd, dep])
+
+  // Prevent distortion of children by adjusting their scale
+  usePreserveScale(flipId, parentScale, startPositions, dep)
 }

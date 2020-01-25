@@ -1,28 +1,54 @@
 import { useRef, useEffect, useLayoutEffect } from 'react'
-import { UFG, Positions, FlipElement } from './types'
+import { UFG, Positions, Position, FlipElement } from './types'
 import { DEFAULT_OPTIONS } from './const'
-import { invertScale, invertXY } from './helpers'
-
-const debounce = function debounce<F extends (...args: any[]) => any>(
-  cb: F,
-  wait: number
-) {
-  let timer: any
-  return function _debounce(...args: Parameters<F>) {
-    clearTimeout(timer)
-    timer = setTimeout(() => cb(...args), wait)
-  }
-}
+import { invertScale, invertXY, debounce } from './helpers'
 
 export const useFlipGroup: UFG = ({
-  flipRoot,
+  flipId,
   deps,
   onTransitionEnd,
   opts = DEFAULT_OPTIONS,
   __TEST__ = false
 }) => {
-  const positions = useRef<Positions | null>(null)
-  const oldDepsRef = useRef<any>(deps)
+  const startPositions = useRef<Positions | null>(null)
+  const parentPosition = useRef<Position | null>(null)
+  const prevFlipId = useRef<string | null>(flipId)
+  const initialEl = document.getElementById(flipId)
+
+  function saveChildrenPositions(parent: HTMLElement) {
+    for (const child of parent.children as HTMLCollectionOf<
+      FlipElement
+    >) {
+      if (child.dataset.id) {
+        startPositions.current![child.dataset.id] = child.getBoundingClientRect()
+
+        // Testing purposes
+        if (__TEST__) {
+          const testRoot = parent as any
+          testRoot.getChildPosition(
+            child.dataset.id,
+            startPositions.current![child.dataset.id]
+          )
+        }
+      }
+    }
+  }
+
+  // Save initial positions
+  if (initialEl && !parentPosition.current) {
+    parentPosition.current = initialEl.getBoundingClientRect()
+    startPositions.current = {}
+    saveChildrenPositions(initialEl)
+  }
+
+  // Update parent positions on id change
+  if (prevFlipId.current && prevFlipId.current !== flipId) {
+    const el = document.getElementById(flipId)
+    if (el) {
+      parentPosition.current = el.getBoundingClientRect()
+      saveChildrenPositions(el)
+    }
+  }
 
   const duration = opts.duration || DEFAULT_OPTIONS.duration
   const delay = opts.delay || DEFAULT_OPTIONS.delay
@@ -30,54 +56,53 @@ export const useFlipGroup: UFG = ({
   const transformOrigin =
     opts.transformOrigin || DEFAULT_OPTIONS.transformOrigin
 
-  // Remember old dependencies
+  // Remember previous flipId
   useEffect(() => {
-    oldDepsRef.current = deps
+    prevFlipId.current = flipId
   })
 
   useLayoutEffect(() => {
-    if (flipRoot.current !== null && positions.current !== null) {
-      for (const child of flipRoot.current.children as HTMLCollectionOf<
-        FlipElement
-      >) {
-        if (child.dataset.id) {
-          const currentPos = positions.current[child.dataset.id]
-          const rect = child.getBoundingClientRect()
-          const { scaleX, scaleY } = invertScale(currentPos, rect)
-          const { translateX, translateY } = invertXY(currentPos, rect)
-          child.style.transition = `0s`
-          child.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
-          child.style.transformOrigin = transformOrigin
+    const el = document.getElementById(flipId)
+    if (!el) return
+    if (startPositions.current == null || parentPosition.current == null) return
+
+    for (const child of el.children as HTMLCollectionOf<
+      FlipElement
+    >) {
+      const childKey = child.dataset.id
+      if (childKey) {
+        const currentPos = startPositions.current[childKey]
+        const rect = child.getBoundingClientRect()
+        const { scaleX, scaleY } = invertScale(currentPos, rect)
+        const { translateX, translateY } = invertXY(currentPos, rect)
+
+        startPositions.current[childKey] = rect
+
+        child.style.transition = `0s`
+        child.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
+        child.style.transformOrigin = transformOrigin
+      }
+    }
+  }, [flipId, deps, transformOrigin])
+
+  useEffect(() => {
+    const el = document.getElementById(flipId)
+    if (!el) return
+    if (startPositions.current == null || parentPosition.current == null) return
+
+    let firedOnce = false
+
+    // Update saved DOM startPositions and invoke callback
+    function onTransitionEndCb(e: TransitionEvent) {
+      if (!firedOnce) {
+        firedOnce = true
+        if (onTransitionEnd) {
+          onTransitionEnd()
         }
       }
     }
-  }, [flipRoot, deps, transformOrigin])
 
-  useLayoutEffect(() => {
-    if (flipRoot.current == null) return
-
-    positions.current = {}
-    for (const child of flipRoot.current.children as HTMLCollectionOf<
-      FlipElement
-    >) {
-      if (!child.dataset.id) continue
-      positions.current[child.dataset.id] = child.getBoundingClientRect()
-
-      // Testing purposes
-      if (__TEST__) {
-        const testRoot = flipRoot.current as any
-        testRoot.getChildPosition(
-          child.dataset.id,
-          positions.current[child.dataset.id]
-        )
-      }
-    }
-  }, [flipRoot, __TEST__])
-
-  useEffect(() => {
-    if (flipRoot.current == null) return
-
-    for (const child of flipRoot.current.children as HTMLCollectionOf<
+    for (const child of el.children as HTMLCollectionOf<
       FlipElement
     >) {
       let hasTransformsApplied
@@ -91,58 +116,25 @@ export const useFlipGroup: UFG = ({
       if (child.dataset.id && hasTransformsApplied) {
         child.style.transform = ``
         child.style.transition = `
-          transform ${duration}ms ${easing} ${delay}ms,
-          scale ${duration}ms ${easing} ${delay}ms
+          transform ${duration}ms ${easing} ${delay}ms
         `
       }
     }
-  }, [flipRoot, delay, easing, duration, deps, __TEST__])
 
-  useEffect(() => {
-    if (flipRoot.current == null) return
-
-    let firedOnce = false
-
-    const rootClone = flipRoot.current
-
-    // Update saved DOM positions and invoke callback
-    function onTransitionEndCb(e: TransitionEvent) {
-      if (!firedOnce) {
-        firedOnce = true
-        if (onTransitionEnd) {
-          onTransitionEnd()
-        }
-      }
-
-      const target = e.target as any
-      // Only add listener to elements which have a data-id
-      const targetKey = target.dataset!.id!
-      if (!targetKey) return
-      if (positions.current == null) return
-      positions.current[targetKey] = target.getBoundingClientRect()
-    }
-
-    rootClone.addEventListener('transitionend', onTransitionEndCb)
-
-    if (__TEST__) {
-      const testRoot = flipRoot.current as any
-      for (const child of testRoot.children as HTMLCollectionOf<FlipElement>) {
-        positions.current![child.dataset.id!] = child.getBoundingClientRect()
-      }
-      testRoot.onTransitionEnd(positions.current)
-    }
-
+    el.addEventListener('transitionend', onTransitionEndCb)
     return () =>
-      rootClone.removeEventListener('transitionend', onTransitionEndCb)
-  }, [flipRoot, deps, onTransitionEnd, __TEST__])
+      el.removeEventListener('transitionend', onTransitionEndCb)
+  }, [flipId, deps, onTransitionEnd, duration, easing, delay, __TEST__])
 
   useEffect(() => {
-    if (!flipRoot.current) return
+    const el = document.getElementById(flipId)
+    if (!el) return
+    if (startPositions.current == null) return
 
     const onResize = debounce(() => {
-      if (flipRoot.current == null || positions.current == null) return
+      if (!el || startPositions.current == null) return
 
-      const children = flipRoot.current.children as HTMLCollectionOf<
+      const children = el.children as HTMLCollectionOf<
         FlipElement
       >
       for (const child of children) {
@@ -150,11 +142,11 @@ export const useFlipGroup: UFG = ({
 
         if (!key) return
 
-        positions.current[key] = child.getBoundingClientRect()
+        startPositions.current[key] = child.getBoundingClientRect()
       }
     }, 500)
 
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
-  }, [flipRoot])
+  }, [flipId])
 }
