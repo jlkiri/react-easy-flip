@@ -66,7 +66,8 @@ export const useFlipGroup: UFG = ({
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPositions.current == null || parentPosition.current == null) return
+    if (startPositions.current == null) return
+
     for (const child of el.children as HTMLCollectionOf<
       FlipElement
     >) {
@@ -78,6 +79,7 @@ export const useFlipGroup: UFG = ({
           const { scaleX, scaleY } = invertScale(currentPos, rect)
           const { translateX, translateY } = invertXY(currentPos, rect)
 
+          // Update positions that will be used as "first" at next render
           startPositions.current[childKey] = rect
 
           child.style.transition = `0s`

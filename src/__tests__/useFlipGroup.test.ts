@@ -8,6 +8,7 @@ import { TestRef, Positions } from '../types'
 
 it('Properly stores child state in a ref object', () => {
   const MAX_RENDERS = 2
+  const FLIP_ID = 'TEST'
 
   const rootRef = React.createRef() as React.MutableRefObject<TestRef>
   const positionByRender: Positions = {}
@@ -21,10 +22,13 @@ it('Properly stores child state in a ref object', () => {
     key: string,
     pos: ClientRect | DOMRect
   ) => {
+    console.log('hiiihhhhihihihii')
     if (renderNumber <= MAX_RENDERS) {
       positionByRender[`${key}-${renderNumber}`] = pos
     }
   }
+
+  rootRef.current.log = (msg) => console.log(msg)
 
   // Mock listeners
   rootRef.current.addEventListener = (name, _) => {
@@ -77,10 +81,11 @@ it('Properly stores child state in a ref object', () => {
   ]
 
   const initialArgs = {
-    flipRoot: rootRef,
+    flipId: FLIP_ID,
     deps: initialDeps,
     opts: { transition: 0, delay: 0, easing: 'ease' },
-    __TEST__: true
+    __TEST__: true,
+    __TEST_REF__: rootRef
   }
 
   const { rerender } = renderHook((args) => useFlipGroup(args as any), {
@@ -122,13 +127,16 @@ it('Properly stores child state in a ref object', () => {
   renderNumber++
 
   const nextArgs = {
-    flipRoot: rootRef,
+    flipId: FLIP_ID,
     deps: nextDeps,
     opts: { transition: 0, delay: 0, easing: 'ease' },
-    __TEST__: true
+    __TEST__: true,
+    __TEST_REF__: rootRef
   }
 
   rerender(nextArgs)
+
+  console.log(positionByRender)
 
   expect(positionByRender[`first-1`].left).toBe(
     positionByRender['second-2'].left

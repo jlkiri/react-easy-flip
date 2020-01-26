@@ -18,17 +18,19 @@ export const usePreserveScale = (flipId: any, pscale: any, target: any, dep: any
     const el = document.getElementById(flipId)
     if (!el) return
     if (target.current == null) return
-    function rescaleChild() {
+
+    function adjustChildScale() {
       const inProgressRect = el!.getBoundingClientRect()
       for (const child of el!.children as HTMLCollectionOf<HTMLElement>) {
         const { scaleX, scaleY } = invertScale(inProgressRect, target.current)
         const rScaleX = 1 / scaleX
         const rScaleY = 1 / scaleY
         child.style.transform = `scale(${rScaleX}, ${rScaleY})`
-        requestAnimationFrame(rescaleChild)
+        requestAnimationFrame(adjustChildScale)
       }
     }
-    raf = requestAnimationFrame(rescaleChild)
+
+    raf = requestAnimationFrame(adjustChildScale)
     return () => cancelAnimationFrame(raf)
   }, [flipId, target, dep])
 }
