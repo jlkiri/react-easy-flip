@@ -59,14 +59,11 @@ export const useSharedElementTransition: UST = ({
   }, [flipId, dep, transformOrigin])
 
   useEffect(() => {
-    let raf: any
-
     function onTransitionEndCb(this: any, e: any) {
       // Prevent handling of bubbled events from children
       if (e.target === this) {
         _onTransitionEnd()
       }
-      cancelAnimationFrame(raf)
     }
 
     const el = document.getElementById(flipId)
@@ -81,7 +78,6 @@ export const useSharedElementTransition: UST = ({
     el.addEventListener('transitionend', onTransitionEndCb)
     return () => {
       el.removeEventListener('transitionend', onTransitionEndCb)
-      cancelAnimationFrame(raf)
     }
   }, [flipId, duration, easing, delay, _onTransitionEnd, dep])
 
