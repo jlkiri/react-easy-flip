@@ -75,9 +75,11 @@ function SimpleFlipApp2() {
   const ref = useRef(null)
   const [clicked, setClicked] = useState(false)
 
+  const flipId = 'qqq'
+
   let abc = ['A', 'B', 'C', 'D', 'E', 'F']
-  // useSimpleFlip({ flipRef: ref, flag: clicked })
-  // useFlipGroup({ flipRoot: ref, deps: clicked })
+  useSimpleFlip({ flipId, flag: clicked })
+  // useFlipGroup({ flipId, deps: clicked })
 
   function handleClick() {
     setClicked(!clicked)
@@ -87,7 +89,7 @@ function SimpleFlipApp2() {
 
   return (
     <div
-      ref={ref}
+      id={flipId}
       onClick={handleClick}
       className={clicked ? 'vertical' : 'horizontal'}
     >
@@ -104,10 +106,8 @@ function SimpleFlipApp() {
   const [clicked, setClicked] = useState(false)
 
   const flipId = 'simple'
-  const flipId2 = 'circle'
 
   useSimpleFlip({ flipId, flag: clicked })
-  // useSimpleFlip({ flipId: flipId2, flag: clicked })
 
   function handleClick() {
     setClicked(!clicked)
@@ -119,7 +119,7 @@ function SimpleFlipApp() {
       onClick={handleClick}
       className={'sq' + (clicked ? '--w' : '')}
     >
-      <div id={flipId2} className="circle"></div>
+      <div className="circle"></div>
     </div>
   )
 }
@@ -156,13 +156,13 @@ function App() {
 
   useFlipGroup({
     flipId,
-    opts: { duration: 500 },
+    opts: { duration: 900 },
     onTransitionEnd,
     deps: items
   })
 
   const shuffleItems = function shuffleItems() {
-    const result = shuffle([...items])
+    let result = shuffle([...items])
     setItems(result)
     setButtonClickable(false)
   }
@@ -206,4 +206,4 @@ function App() {
   )
 }
 
-export default SimpleFlipApp
+export default SharedTransitionApp

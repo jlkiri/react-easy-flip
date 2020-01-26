@@ -13,6 +13,7 @@ export const useFlipGroup: UFG = ({
   const startPositions = useRef<Positions | null>(null)
   const parentPosition = useRef<Position | null>(null)
   const prevFlipId = useRef<string | null>(flipId)
+  const prevDeps = useRef<any>(deps)
   const initialEl = document.getElementById(flipId)
 
   function saveChildrenPositions(parent: HTMLElement) {
@@ -56,31 +57,33 @@ export const useFlipGroup: UFG = ({
   const transformOrigin =
     opts.transformOrigin || DEFAULT_OPTIONS.transformOrigin
 
-  // Remember previous flipId
+  // Remember previous flipId and deps
   useEffect(() => {
     prevFlipId.current = flipId
+    prevDeps.current = deps
   })
 
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
     if (startPositions.current == null || parentPosition.current == null) return
-
     for (const child of el.children as HTMLCollectionOf<
       FlipElement
     >) {
       const childKey = child.dataset.id
       if (childKey) {
-        const currentPos = startPositions.current[childKey]
-        const rect = child.getBoundingClientRect()
-        const { scaleX, scaleY } = invertScale(currentPos, rect)
-        const { translateX, translateY } = invertXY(currentPos, rect)
+        if (startPositions.current[childKey]) {
+          const currentPos = startPositions.current[childKey]
+          const rect = child.getBoundingClientRect()
+          const { scaleX, scaleY } = invertScale(currentPos, rect)
+          const { translateX, translateY } = invertXY(currentPos, rect)
 
-        startPositions.current[childKey] = rect
+          startPositions.current[childKey] = rect
 
-        child.style.transition = `0s`
-        child.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
-        child.style.transformOrigin = transformOrigin
+          child.style.transition = `0s`
+          child.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
+          child.style.transformOrigin = transformOrigin
+        }
       }
     }
   }, [flipId, deps, transformOrigin])
@@ -105,7 +108,10 @@ export const useFlipGroup: UFG = ({
     for (const child of el.children as HTMLCollectionOf<
       FlipElement
     >) {
+
       let hasTransformsApplied
+      const childKey = child.dataset.id
+
       if (__TEST__) {
         hasTransformsApplied = true
       } else {
@@ -113,7 +119,8 @@ export const useFlipGroup: UFG = ({
           window.getComputedStyle(child).getPropertyValue('transform') !==
           'none'
       }
-      if (child.dataset.id && hasTransformsApplied) {
+
+      if (childKey && hasTransformsApplied) {
         child.style.transform = ``
         child.style.transition = `
           transform ${duration}ms ${easing} ${delay}ms
