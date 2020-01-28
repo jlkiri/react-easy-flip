@@ -206,4 +206,4 @@ function App() {
   )
 }
 
-export default SharedTransitionApp
+export default SimpleFlipApp
