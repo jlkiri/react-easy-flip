@@ -1,14 +1,22 @@
 import { Position } from './types'
 
-export function invertScale(rectA: Position, rectB: Position) {
-  const scaleX = rectA.width / rectB.width
-  const scaleY = rectA.height / rectB.height
+export function invertScale(
+  rectA: Position,
+  rectB: Position,
+  matrix?: number[]
+) {
+  const modX = matrix ? matrix[0] : 1
+  const modY = matrix ? matrix[5] : 1
+  const scaleX = (rectA.width * modX) / Math.max(rectB.width, 0.001)
+  const scaleY = (rectA.height * modY) / Math.max(rectB.height, 0.001)
   return { scaleX, scaleY }
 }
 
-export function invertXY(rectA: Position, rectB: Position) {
-  const translateX = rectA.left - rectB.left
-  const translateY = rectA.top - rectB.top
+export function invertXY(rectA: Position, rectB: Position, matrix?: number[]) {
+  const modX = matrix ? matrix[12] : 1
+  const modY = matrix ? matrix[13] : 1
+  const translateX = rectA.left + modX - rectB.left
+  const translateY = rectA.top + modY - rectB.top
   return { translateX, translateY }
 }
 

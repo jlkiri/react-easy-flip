@@ -1,31 +1,46 @@
 import { useRef, useEffect, useLayoutEffect } from 'react'
-import * as Rematrix from "rematrix";
+import * as Rematrix from 'rematrix'
 import { Position, USF } from './types'
 import { DEFAULT_OPTIONS } from './const'
 import { invertScale, invertXY } from './helpers'
 import { usePreserveScale } from './usePreserveScale'
-import { start } from 'repl';
+
+const usePosition = (initialPosition: Position | null = null) => {
+  const cachedPosition = useRef<Position | null>(initialPosition)
+  return {
+    isNull() {
+      return cachedPosition.current == null
+    },
+    getPosition() {
+      return cachedPosition.current
+    },
+    updatePosition(newPosition: Position) {
+      cachedPosition.current = newPosition
+    }
+  }
+}
 
 export const useSimpleFlip: USF = ({
   flipId,
   flag,
   opts = DEFAULT_OPTIONS
 }) => {
-  const startPosition = useRef<Position | null>(null)
-  const prevPosition = useRef<Position | null>(null)
+  const cachedPosition = usePosition()
   const prevFlipId = useRef<string | null>(flipId)
   const parentScale = useRef<any>(null)
   const inProgressRef = useRef<boolean>(false)
 
   const initialEl = document.getElementById(flipId)
 
-  if (initialEl && !startPosition.current) {
-    startPosition.current = initialEl.getBoundingClientRect()
+  if (initialEl && cachedPosition.isNull()) {
+    cachedPosition.updatePosition(initialEl.getBoundingClientRect())
   }
 
   if (prevFlipId.current && prevFlipId.current !== flipId) {
     const el = document.getElementById(flipId)
-    startPosition.current = el ? el.getBoundingClientRect() : null
+    if (el) {
+      cachedPosition.updatePosition(el.getBoundingClientRect())
+    }
   }
 
   const duration = opts.duration || DEFAULT_OPTIONS.duration
@@ -41,62 +56,59 @@ export const useSimpleFlip: USF = ({
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPosition.current == null) return
+    if (cachedPosition.isNull()) return
 
     const rect = el.getBoundingClientRect()
 
-    if (inProgressRef.current) {
-      const compStyles = window.getComputedStyle(el);
-      const tf = compStyles.transform;
+    const compStyles = window.getComputedStyle(el)
+    const matrix = Rematrix.fromString(compStyles.transform)
 
-      const matrix = Rematrix.fromString(tf);
-      const cw = (startPosition.current.width * matrix[0]) / parseInt(compStyles.width, 10);
-      const ch = (startPosition.current.height * matrix[5]) / parseInt(compStyles.height, 10);
+    const cachedPos = cachedPosition.getPosition() as Position
 
-      rect.width = parseInt(compStyles.width, 10);
-      rect.height = parseInt(compStyles.height, 10);
+    // Get height/width of the currently applied style (getBCR gives wrong values)
+    const appliedWidth = parseInt(compStyles.width, 10)
+    const appliedHeight = parseInt(compStyles.height, 10)
+    const appliedTop = parseInt(compStyles.top, 10)
+    const appliedLeft = parseInt(compStyles.left, 10)
 
-      parentScale.current = { scaleX: cw, scaleY: ch }
-      startPosition.current = rect
-      const tfString = Rematrix.toString(Rematrix.scale(cw, ch));
-      el.style.transition = ``;
-      el.style.transform = tfString;
-      return;
+    const nextRect = {
+      ...rect,
+      width: appliedWidth,
+      height: appliedHeight,
+      top: appliedTop,
+      left: appliedLeft
     }
 
-
-
-
-
-
-
-    prevPosition.current = startPosition.current
-    const { scaleX, scaleY } = invertScale(startPosition.current, rect)
-    const { translateX, translateY } = invertXY(startPosition.current, rect)
-    startPosition.current = rect
-
-
-
-
-
+    // Use cached positions (=previous "last") to calculate how much the element has transformed
+    // and use that to calculate a reverse transform
+    const { scaleX, scaleY } = invertScale(cachedPos, nextRect, matrix)
+    const { translateX, translateY } = invertXY(cachedPos, nextRect, matrix)
 
     parentScale.current = { scaleX, scaleY }
 
+    cachedPosition.updatePosition(nextRect)
+
+    const tf = Rematrix.multiply(
+      Rematrix.translate(translateX, translateY),
+      Rematrix.scale(scaleX, scaleY)
+    )
+
     el.style.transition = ``
-    el.style.transform = `
-        translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
+    el.style.transform = Rematrix.toString(tf)
     el.style.transformOrigin = transformOrigin
-  }, [flipId, flag, transformOrigin])
+
+    return
+  }, [flipId, flag, cachedPosition, transformOrigin])
 
   useEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPosition.current == null) return
+    if (cachedPosition.isNull()) return
 
     inProgressRef.current = true
     el.style.transform = ``
     el.style.transition = `transform ${duration}ms ${easing} ${delay}ms`
-  }, [flipId, flag, delay, easing, duration])
+  }, [flipId, flag, delay, cachedPosition, easing, duration])
 
-  usePreserveScale(flipId, parentScale, startPosition, flag)
+  usePreserveScale(flipId, parentScale, cachedPosition, flag)
 }

@@ -1,11 +1,17 @@
 import { useEffect, useLayoutEffect } from 'react'
 import { invertScale } from './helpers'
 
-export const usePreserveScale = (flipId: any, pscale: any, target: any, dep: any) => {
+export const usePreserveScale = (
+  flipId: any,
+  pscale: any,
+  cachedPosition: any,
+  dep: any
+) => {
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
     if (!pscale.current) return
+
     for (const child of el.children as HTMLCollectionOf<HTMLElement>) {
       const rScaleX = 1 / pscale.current.scaleX
       const rScaleY = 1 / pscale.current.scaleY
@@ -17,12 +23,15 @@ export const usePreserveScale = (flipId: any, pscale: any, target: any, dep: any
     let raf: any
     const el = document.getElementById(flipId)
     if (!el) return
-    if (target.current == null) return
+    if (cachedPosition.isNull()) return
 
     function adjustChildScale() {
       const inProgressRect = el!.getBoundingClientRect()
       for (const child of el!.children as HTMLCollectionOf<HTMLElement>) {
-        const { scaleX, scaleY } = invertScale(inProgressRect, target.current)
+        const { scaleX, scaleY } = invertScale(
+          inProgressRect,
+          cachedPosition.getPosition()
+        )
         const rScaleX = 1 / scaleX
         const rScaleY = 1 / scaleY
         child.style.transform = `scale(${rScaleX}, ${rScaleY})`
@@ -32,5 +41,5 @@ export const usePreserveScale = (flipId: any, pscale: any, target: any, dep: any
 
     raf = requestAnimationFrame(adjustChildScale)
     return () => cancelAnimationFrame(raf)
-  }, [flipId, target, dep])
+  }, [flipId, cachedPosition, dep])
 }
