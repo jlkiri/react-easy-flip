@@ -1,5 +1,4 @@
 import { Position } from './types'
-import { read } from 'fs'
 
 export function invertScale(
   rectA: Position,
