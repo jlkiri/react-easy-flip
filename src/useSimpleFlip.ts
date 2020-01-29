@@ -1,27 +1,47 @@
 import { useRef, useEffect, useLayoutEffect } from 'react'
+import * as Rematrix from 'rematrix'
 import { Position, USF } from './types'
 import { DEFAULT_OPTIONS } from './const'
 import { invertScale, invertXY } from './helpers'
 import { usePreserveScale } from './usePreserveScale'
+import { usePosition } from './usePosition'
+
+type Scale = ReturnType<typeof invertScale>
+
+const noop = () => {}
 
 export const useSimpleFlip: USF = ({
   flipId,
   flag,
+  onTransitionEnd,
+  isShared = false,
   opts = DEFAULT_OPTIONS
 }) => {
-  const startPosition = useRef<Position | null>(null)
+  const cachedPosition = usePosition()
+  const cachedTransform = useRef<string | null>(null)
   const prevFlipId = useRef<string | null>(flipId)
-  const parentScale = useRef<any>(null)
+  const parentScale = useRef<Scale | null>(null)
+  const isPlaying = useRef<boolean>(false)
 
   const initialEl = document.getElementById(flipId)
 
-  if (initialEl && !startPosition.current) {
-    startPosition.current = initialEl.getBoundingClientRect()
+  const _onTransitionEnd = onTransitionEnd ? onTransitionEnd : noop
+
+  if (initialEl && cachedPosition.isNull()) {
+    cachedPosition.updatePosition(initialEl.getBoundingClientRect())
   }
 
   if (prevFlipId.current && prevFlipId.current !== flipId) {
     const el = document.getElementById(flipId)
-    startPosition.current = el ? el.getBoundingClientRect() : null
+    if (el) {
+      cachedPosition.updatePosition(el.getBoundingClientRect())
+    }
+  }
+
+  if (initialEl && isShared) {
+    cachedTransform.current = window
+      .getComputedStyle(initialEl!)
+      .getPropertyValue('transform')
   }
 
   const duration = opts.duration || DEFAULT_OPTIONS.duration
@@ -37,29 +57,80 @@ export const useSimpleFlip: USF = ({
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPosition.current == null) return
+    if (cachedPosition.isNull()) return
 
     const rect = el.getBoundingClientRect()
-    const { scaleX, scaleY } = invertScale(startPosition.current, rect)
-    const { translateX, translateY } = invertXY(startPosition.current, rect)
-    startPosition.current = rect
+    const compStyles = window.getComputedStyle(el)
+    const shouldUseCachedTransform = isPlaying.current && isShared
+
+    const matrix = Rematrix.fromString(
+      shouldUseCachedTransform ? cachedTransform.current : compStyles.transform
+    )
+
+    const cachedPos = cachedPosition.getPosition() as Position
+
+    // Get height/width of the currently applied style (getBCR gives wrong values)
+    const appliedWidth = parseInt(compStyles.width, 10)
+    const appliedHeight = parseInt(compStyles.height, 10)
+    const appliedTop = parseInt(compStyles.top, 10)
+    const appliedLeft = parseInt(compStyles.left, 10)
+    const nextRect = {
+      ...rect,
+      width: appliedWidth,
+      height: appliedHeight,
+      top: isShared ? rect.top : appliedTop,
+      left: isShared ? rect.left : appliedLeft
+    }
+
+    // Use cached positions (=previous "last") to calculate how much the element has transformed
+    // and use that to calculate a reverse transform
+    const { scaleX, scaleY } = invertScale(cachedPos, nextRect, matrix)
+    const { translateX, translateY } = invertXY(cachedPos, nextRect, matrix)
 
     parentScale.current = { scaleX, scaleY }
 
+    cachedPosition.updatePosition(nextRect)
+
+    const tf = Rematrix.multiply(
+      Rematrix.translate(translateX, translateY),
+      Rematrix.scale(scaleX, scaleY)
+    )
+
+    // Invert
     el.style.transition = ``
-    el.style.transform = `
-        translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
+    el.style.transform = Rematrix.toString(tf)
     el.style.transformOrigin = transformOrigin
-  }, [flipId, flag, transformOrigin])
+
+    isPlaying.current = true
+
+    return
+  }, [flipId, flag, cachedPosition, isShared, transformOrigin])
 
   useEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPosition.current == null) return
+    if (cachedPosition.isNull()) return
 
-    el.style.transform = ``
-    el.style.transition = `transform ${duration}ms ${easing} ${delay}ms`
-  }, [flipId, flag, delay, easing, duration])
+    function onTransitionEndCb(this: any, e: any) {
+      // Prevent handling of bubbled events from children
+      if (e.target === this) {
+        isPlaying.current = false
+        _onTransitionEnd()
+      }
+    }
 
-  usePreserveScale(flipId, parentScale, startPosition, flag)
+    // Play
+    // Double rAF is a hack for Firefox (not needed in Chrome at all)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.style.transform = ``
+        el.style.transition = `transform ${duration}ms ${easing} ${delay}ms`
+      })
+    })
+
+    el.addEventListener('transitionend', onTransitionEndCb)
+    return () => el.removeEventListener('transitionend', onTransitionEndCb)
+  }, [flipId, flag, delay, _onTransitionEnd, cachedPosition, easing, duration])
+
+  usePreserveScale(flipId, parentScale, cachedPosition, flag)
 }

@@ -1,10 +1,7 @@
-import { Ref, MutableRefObject } from "react"
-
 export type Positions = { [x: string]: ClientRect | DOMRect }
 export type Position = ClientRect | DOMRect
 export type UFG = (args: FlipGroupArgs) => void
 export type USF = (args: SimpleFlipArgs) => void
-export type UST = (args: SharedTransitionArgs) => void
 
 export type FlipTestElement = Pick<
   FlipElement,
@@ -45,14 +42,8 @@ export interface FlipGroupArgs {
 export interface SimpleFlipArgs {
   flipId: string
   flag: boolean
-  opts?: FlipOptions
-  __TEST__?: boolean
-}
-
-export interface SharedTransitionArgs {
-  flipId: string
-  dep: boolean
   onTransitionEnd?: () => void
+  isShared?: boolean
   opts?: FlipOptions
   __TEST__?: boolean
 }

@@ -35,7 +35,8 @@ function SharedTransitionApp() {
 
   useSimpleFlip({
     flipId: id,
-    flag: clicked
+    flag: clicked,
+    isShared: true
   })
 
   function handleClick(id: string) {
@@ -207,4 +208,4 @@ function App() {
   )
 }
 
-export default SimpleFlipApp
+export default SharedTransitionApp

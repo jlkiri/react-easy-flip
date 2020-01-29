@@ -2,7 +2,6 @@ import { useRef, useEffect, useLayoutEffect } from 'react'
 import { UFG, Positions, Position, FlipElement } from './types'
 import { DEFAULT_OPTIONS } from './const'
 import { invertScale, invertXY, debounce } from './helpers'
-import { start } from 'repl'
 
 export const useFlipGroup: UFG = ({
   flipId,

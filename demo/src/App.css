@@ -78,6 +78,7 @@
 }
 
 .minisq {
+  position: relative;
   height: 100px;
   width: 100px;
   padding: 10px;
@@ -125,9 +126,10 @@
 }
 
 .bigsq {
+  position: relative;
   height: 100vh;
   width: 100vw;
-  display: inline-flex;
+  display: flex;
   justify-content: center;
   align-items: center;
   background-color: black;
