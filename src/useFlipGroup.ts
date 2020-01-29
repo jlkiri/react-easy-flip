@@ -1,4 +1,5 @@
 import { useRef, useEffect, useLayoutEffect } from 'react'
+import * as Rematrix from 'rematrix'
 import { UFG, Positions, Position, FlipElement } from './types'
 import { DEFAULT_OPTIONS } from './const'
 import { invertScale, invertXY, debounce } from './helpers'
@@ -11,7 +12,7 @@ export const useFlipGroup: UFG = ({
   __TEST__ = false,
   __TEST_REF__ = {}
 }) => {
-  const startPositions = useRef<Positions | null>(null)
+  const cachedPositions = useRef<Positions | null>(null)
   const parentPosition = useRef<Position | null>(null)
   const prevFlipId = useRef<string | null>(flipId)
   const prevDeps = useRef<any>(deps)
@@ -21,7 +22,7 @@ export const useFlipGroup: UFG = ({
   function saveChildrenPositions(parent: HTMLElement) {
     for (const child of parent.children as HTMLCollectionOf<FlipElement>) {
       if (child.dataset.id) {
-        startPositions.current![
+        cachedPositions.current![
           child.dataset.id
         ] = child.getBoundingClientRect()
 
@@ -29,7 +30,7 @@ export const useFlipGroup: UFG = ({
         if (__TEST__) {
           __TEST_REF__.current!.getChildPosition!(
             child.dataset.id,
-            startPositions.current![child.dataset.id]
+            cachedPositions.current![child.dataset.id]
           )
         }
       }
@@ -37,14 +38,14 @@ export const useFlipGroup: UFG = ({
   }
 
   if (__TEST__) {
-    startPositions.current = {}
+    cachedPositions.current = {}
     saveChildrenPositions(__TEST_REF__.current as any)
   }
 
   // Save initial positions
   if (initialEl && !parentPosition.current) {
     parentPosition.current = initialEl.getBoundingClientRect()
-    startPositions.current = {}
+    cachedPositions.current = {}
     saveChildrenPositions(initialEl)
   }
 
@@ -72,22 +73,48 @@ export const useFlipGroup: UFG = ({
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPositions.current == null) return
+    if (cachedPositions.current == null) return
 
     for (const child of el.children as HTMLCollectionOf<FlipElement>) {
       const childKey = child.dataset.id
       if (childKey) {
-        if (startPositions.current[childKey]) {
-          const currentPos = startPositions.current[childKey]
+        if (cachedPositions.current[childKey]) {
+          const cachedPos = cachedPositions.current[childKey]
           const rect = child.getBoundingClientRect()
-          const { scaleX, scaleY } = invertScale(currentPos, rect)
-          const { translateX, translateY } = invertXY(currentPos, rect)
+          const compStyles = window.getComputedStyle(child)
+
+          const matrix = Rematrix.fromString(compStyles.transform)
+
+          const appliedWidth = parseInt(compStyles.width!, 10)
+          const appliedHeight = parseInt(compStyles.height!, 10)
+          const appliedTop = parseInt(compStyles.top!, 10)
+          const appliedLeft = parseInt(compStyles.left!, 10)
+
+          const nextRect = {
+            ...rect,
+            width: appliedWidth,
+            height: appliedHeight,
+            top: appliedTop,
+            left: appliedLeft
+          }
+
+          const { scaleX, scaleY } = invertScale(cachedPos, nextRect, matrix)
+          const { translateX, translateY } = invertXY(
+            cachedPos,
+            nextRect,
+            matrix
+          )
+
+          const tf = Rematrix.multiply(
+            Rematrix.translate(translateX, translateY),
+            Rematrix.scale(scaleX, scaleY)
+          )
 
           // Update positions that will be used as "first" at next render
-          startPositions.current[childKey] = rect
+          cachedPositions.current[childKey] = nextRect
 
           child.style.transition = `0s`
-          child.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
+          child.style.transform = Rematrix.toString(tf)
           child.style.transformOrigin = transformOrigin
         }
       }
@@ -97,11 +124,12 @@ export const useFlipGroup: UFG = ({
   useEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPositions.current == null || parentPosition.current == null) return
+    if (cachedPositions.current == null || parentPosition.current == null)
+      return
 
     let firedOnce = false
 
-    // Update saved DOM startPositions and invoke callback
+    // Update saved DOM cachedPositions and invoke callback
     function onTransitionEndCb(e: TransitionEvent) {
       if (!firedOnce) {
         firedOnce = true
@@ -133,11 +161,11 @@ export const useFlipGroup: UFG = ({
 
     if (__TEST__) {
       for (const child of __TEST_REF__.current!.children!) {
-        startPositions.current[
+        cachedPositions.current[
           child.dataset.id!
         ] = child.getBoundingClientRect() as any
       }
-      __TEST_REF__.current!.onTransitionEnd!(startPositions.current)
+      __TEST_REF__.current!.onTransitionEnd!(cachedPositions.current)
     }
 
     el.addEventListener('transitionend', onTransitionEndCb)
@@ -156,10 +184,10 @@ export const useFlipGroup: UFG = ({
   useEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPositions.current == null) return
+    if (cachedPositions.current == null) return
 
     const onResize = debounce(() => {
-      if (!el || startPositions.current == null) return
+      if (!el || cachedPositions.current == null) return
 
       const children = el.children as HTMLCollectionOf<FlipElement>
       for (const child of children) {
@@ -167,7 +195,7 @@ export const useFlipGroup: UFG = ({
 
         if (!key) return
 
-        startPositions.current[key] = child.getBoundingClientRect()
+        cachedPositions.current[key] = child.getBoundingClientRect()
       }
     }, 500)
 

@@ -70,10 +70,10 @@ export const useSimpleFlip: USF = ({
     const cachedPos = cachedPosition.getPosition() as Position
 
     // Get height/width of the currently applied style (getBCR gives wrong values)
-    const appliedWidth = parseInt(compStyles.width, 10)
-    const appliedHeight = parseInt(compStyles.height, 10)
-    const appliedTop = parseInt(compStyles.top, 10)
-    const appliedLeft = parseInt(compStyles.left, 10)
+    const appliedWidth = parseInt(compStyles.width!, 10)
+    const appliedHeight = parseInt(compStyles.height!, 10)
+    const appliedTop = parseInt(compStyles.top!, 10)
+    const appliedLeft = parseInt(compStyles.left!, 10)
     const nextRect = {
       ...rect,
       width: appliedWidth,
