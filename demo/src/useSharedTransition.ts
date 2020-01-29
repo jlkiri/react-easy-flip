@@ -3,6 +3,7 @@ import { invertScale, invertXY } from './helpers'
 import { DEFAULT_OPTIONS } from './const'
 import { Position, UST } from './types'
 import { usePreserveScale } from './usePreserveScale'
+import { usePosition } from './usePosition'
 
 const noop = () => { }
 
@@ -12,19 +13,21 @@ export const useSharedElementTransition: UST = ({
   onTransitionEnd,
   opts = DEFAULT_OPTIONS
 }) => {
-  const startPositions = useRef<Position | null>(null)
+  const cachedPosition = usePosition()
   const prevFlipId = useRef<string | null>(flipId)
   const parentScale = useRef<any>(null)
 
   const initialEl = document.getElementById(flipId)
 
-  if (initialEl && !startPositions.current) {
-    startPositions.current = initialEl.getBoundingClientRect()
+  if (initialEl && cachedPosition.isNull()) {
+    cachedPosition.updatePosition(initialEl.getBoundingClientRect())
   }
 
   if (prevFlipId.current && prevFlipId.current !== flipId) {
     const el = document.getElementById(flipId)
-    startPositions.current = el ? el.getBoundingClientRect() : null
+    if (el) {
+      cachedPosition.updatePosition(el.getBoundingClientRect())
+    }
   }
 
   const duration = opts.duration || DEFAULT_OPTIONS.duration
@@ -42,11 +45,11 @@ export const useSharedElementTransition: UST = ({
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPositions.current == null) return
+    if (cachedPosition.isNull()) return
 
     const targetRect = el.getBoundingClientRect()
-    const startRect = startPositions.current
-    startPositions.current = targetRect
+    const startRect = cachedPosition.getPosition() as Position
+    cachedPosition.updatePosition(targetRect)
 
     const { scaleX, scaleY } = invertScale(startRect, targetRect)
 
@@ -56,7 +59,7 @@ export const useSharedElementTransition: UST = ({
     const { translateX, translateY } = invertXY(startRect, targetRect)
     el.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
     el.style.transformOrigin = transformOrigin
-  }, [flipId, dep, transformOrigin])
+  }, [flipId, dep, cachedPosition, transformOrigin])
 
   useEffect(() => {
     let raf: any
@@ -71,7 +74,7 @@ export const useSharedElementTransition: UST = ({
 
     const el = document.getElementById(flipId)
     if (!el) return
-    if (startPositions.current == null) return
+    if (cachedPosition.isNull()) return
 
     el.style.transform = ``
     el.style.transition = `
@@ -83,8 +86,8 @@ export const useSharedElementTransition: UST = ({
       el.removeEventListener('transitionend', onTransitionEndCb)
       cancelAnimationFrame(raf)
     }
-  }, [flipId, duration, easing, delay, _onTransitionEnd, dep])
+  }, [flipId, duration, easing, delay, cachedPosition, _onTransitionEnd, dep])
 
   // Prevent distortion of children by adjusting their scale
-  usePreserveScale(flipId, parentScale, startPositions, dep)
+  usePreserveScale(flipId, parentScale, cachedPosition, dep)
 }

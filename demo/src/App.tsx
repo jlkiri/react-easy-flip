@@ -27,10 +27,15 @@ function SharedTransitionApp() {
     isTransitionOver && console.log('clickable now!')
   }, [isTransitionOver])
 
-  useSharedElementTransition({
+  /* useSharedElementTransition({
     flipId: id,
     dep: clicked,
     onTransitionEnd: onTransitionEnd
+  }) */
+
+  useSimpleFlip({
+    flipId: id,
+    flag: clicked
   })
 
   function handleClick(id: string) {
@@ -45,7 +50,7 @@ function SharedTransitionApp() {
           return (
             <div
               id={item.id}
-              onClick={isTransitionOver ? noop : () => handleClick(item.id)}
+              onClick={() => handleClick(item.id)}
               className={'minisq'}
             >
               <div className={'circle'}>
@@ -59,11 +64,7 @@ function SharedTransitionApp() {
   }
 
   return (
-    <section
-      id={id}
-      onClick={isTransitionOver ? () => handleClick(id) : noop}
-      className={'bigsq'}
-    >
+    <section id={id} onClick={() => handleClick(id)} className={'bigsq'}>
       <div className={'circle'}>
         <div className="innerCircle"></div>
       </div>

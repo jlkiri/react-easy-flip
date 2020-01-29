@@ -4,21 +4,7 @@ import { Position, USF } from './types'
 import { DEFAULT_OPTIONS } from './const'
 import { invertScale, invertXY } from './helpers'
 import { usePreserveScale } from './usePreserveScale'
-
-const usePosition = (initialPosition: Position | null = null) => {
-  const cachedPosition = useRef<Position | null>(initialPosition)
-  return {
-    isNull() {
-      return cachedPosition.current == null
-    },
-    getPosition() {
-      return cachedPosition.current
-    },
-    updatePosition(newPosition: Position) {
-      cachedPosition.current = newPosition
-    }
-  }
-}
+import { usePosition } from './usePosition'
 
 export const useSimpleFlip: USF = ({
   flipId,
@@ -28,7 +14,6 @@ export const useSimpleFlip: USF = ({
   const cachedPosition = usePosition()
   const prevFlipId = useRef<string | null>(flipId)
   const parentScale = useRef<any>(null)
-  const inProgressRef = useRef<boolean>(false)
 
   const initialEl = document.getElementById(flipId)
 
@@ -61,6 +46,7 @@ export const useSimpleFlip: USF = ({
     const rect = el.getBoundingClientRect()
 
     const compStyles = window.getComputedStyle(el)
+
     const matrix = Rematrix.fromString(compStyles.transform)
 
     const cachedPos = cachedPosition.getPosition() as Position
@@ -71,12 +57,16 @@ export const useSimpleFlip: USF = ({
     const appliedTop = parseInt(compStyles.top, 10)
     const appliedLeft = parseInt(compStyles.left, 10)
 
+
+    console.log('appliedTop', appliedTop, 'rectTop', rect.top)
+    console.log('appliedLeft', appliedLeft, 'rectLeft', rect.left)
+
     const nextRect = {
       ...rect,
       width: appliedWidth,
       height: appliedHeight,
-      top: appliedTop,
-      left: appliedLeft
+      top: rect.top,
+      left: rect.left
     }
 
     // Use cached positions (=previous "last") to calculate how much the element has transformed
@@ -105,7 +95,6 @@ export const useSimpleFlip: USF = ({
     if (!el) return
     if (cachedPosition.isNull()) return
 
-    inProgressRef.current = true
     el.style.transform = ``
     el.style.transition = `transform ${duration}ms ${easing} ${delay}ms`
   }, [flipId, flag, delay, cachedPosition, easing, duration])
