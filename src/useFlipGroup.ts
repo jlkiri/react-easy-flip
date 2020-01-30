@@ -80,6 +80,11 @@ export const useFlipGroup: UFG = ({
       if (childKey) {
         if (cachedPositions.current[childKey]) {
           const cachedPos = cachedPositions.current[childKey]
+
+          // getBCR gives wrong values for elements that are playing and
+          // since there is usually no other way to find the "last" dimensions
+          // if they are not explicitly specified, it is recommended to disable
+          // animations until all transitions are finished (event handling)
           const rect = child.getBoundingClientRect()
           const compStyles = window.getComputedStyle(child)
 
@@ -87,15 +92,13 @@ export const useFlipGroup: UFG = ({
 
           const appliedWidth = parseInt(compStyles.width!, 10)
           const appliedHeight = parseInt(compStyles.height!, 10)
-          const appliedTop = parseInt(compStyles.top!, 10)
-          const appliedLeft = parseInt(compStyles.left!, 10)
 
           const nextRect = {
             ...rect,
             width: appliedWidth,
             height: appliedHeight,
-            top: appliedTop,
-            left: appliedLeft
+            top: rect.top,
+            left: rect.left
           }
 
           const { scaleX, scaleY } = invertScale(cachedPos, nextRect, matrix)
@@ -113,7 +116,7 @@ export const useFlipGroup: UFG = ({
           // Update positions that will be used as "first" at next render
           cachedPositions.current[childKey] = nextRect
 
-          child.style.transition = `0s`
+          child.style.transition = ``
           child.style.transform = Rematrix.toString(tf)
           child.style.transformOrigin = transformOrigin
         }

@@ -1,8 +1,8 @@
 import React, { useRef, useCallback, useState } from 'react'
 import './App.css'
 import { useFlipGroup } from './useFlipGroup'
-import { useSimpleFlip } from './useSimpleFlip'
-import { useSharedElementTransition } from './useSharedTransition'
+// import { useSimpleFlip } from './useSimpleFlip'
+// import { useSharedElementTransition } from './useSharedTransition'
 
 const noop = () => {}
 
@@ -33,11 +33,11 @@ function SharedTransitionApp() {
     onTransitionEnd: onTransitionEnd
   }) */
 
-  useSimpleFlip({
+  /* useSimpleFlip({
     flipId: id,
     flag: clicked,
     isShared: true
-  })
+  }) */
 
   function handleClick(id: string) {
     setId(id)
@@ -80,7 +80,7 @@ function SimpleFlipApp2() {
   const flipId = 'qqq'
 
   let abc = ['A', 'B', 'C', 'D', 'E', 'F']
-  useSimpleFlip({ flipId, flag: clicked })
+  // useSimpleFlip({ flipId, flag: clicked })
   // useFlipGroup({ flipId, deps: clicked })
 
   function handleClick() {
@@ -109,7 +109,7 @@ function SimpleFlipApp() {
 
   const flipId = 'simple'
 
-  useSimpleFlip({ flipId, flag: clicked })
+  // useSimpleFlip({ flipId, flag: clicked })
 
   function handleClick() {
     setClicked(!clicked)
@@ -158,7 +158,7 @@ function App() {
 
   useFlipGroup({
     flipId,
-    opts: { duration: 900 },
+    opts: { duration: 1800 },
     onTransitionEnd,
     deps: items
   })
@@ -208,4 +208,4 @@ function App() {
   )
 }
 
-export default SharedTransitionApp
+export default App
