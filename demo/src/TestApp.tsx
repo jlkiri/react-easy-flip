@@ -37,9 +37,7 @@ export function TestApp() {
   const [flag, setFlag] = useState(false)
 
   const flipId = 'flipRoot'
-  const div1 = 'div1'
-  const div2 = 'div2'
-  const div3 = 'div3'
+  const flipGroupId = 'flipGroupId'
 
   /* const onTransitionEnd = useCallback(() => {
     setButtonClickable(true)
@@ -47,20 +45,13 @@ export function TestApp() {
 
   useSimpleFlip({
     flipId,
+    noPreserve: false,
     flag
   })
 
-  useSimpleFlip({
-    flipId: div1,
-    flag
-  })
-  useSimpleFlip({
-    flipId: div2,
-    flag
-  })
-  useSimpleFlip({
-    flipId: div3,
-    flag
+  useFlipGroup({
+    flipId: flipGroupId,
+    deps: flag
   })
 
   const toggle = function toggle() {
@@ -71,14 +62,17 @@ export function TestApp() {
   }
 
   return (
-    <div>
-      <button onClick={toggle} disabled={false}>
-        Toggle
-      </button>
-      <div id={flipId} className={'planets' + (flag ? '--f' : '')}>
-        <div id={div1} />
-        <div id={div2} />
-        <div id={div3} />
+    <div id={flipId} className={'planets' + (flag ? '--f' : '')}>
+      <div id={flipGroupId}>
+        <div onClick={toggle} className="outer" data-id="1">
+          <div className="inner"></div>
+        </div>
+        <div onClick={toggle} className="outer" data-id="2">
+          <div className="inner"></div>
+        </div>
+        <div onClick={toggle} className="outer" data-id="3">
+          <div className="inner"></div>
+        </div>
       </div>
     </div>
   )

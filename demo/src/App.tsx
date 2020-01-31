@@ -1,7 +1,7 @@
 import React, { useRef, useCallback, useState } from 'react'
 import './App.css'
 import { useFlipGroup } from './useFlipGroup'
-// import { useSimpleFlip } from './useSimpleFlip'
+import { useSimpleFlip } from './useSimpleFlip'
 // import { useSharedElementTransition } from './useSharedTransition'
 
 const noop = () => {}
@@ -208,4 +208,4 @@ function App() {
   )
 }
 
-export default App
+export default SimpleFlipApp

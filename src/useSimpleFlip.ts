@@ -6,7 +6,7 @@ import { invertScale, invertXY, Scale } from './helpers'
 import { usePreserveScale } from './usePreserveScale'
 import { usePosition } from './usePosition'
 
-const noop = () => {}
+const noop = () => { }
 
 export const useSimpleFlip: USF = ({
   flipId,

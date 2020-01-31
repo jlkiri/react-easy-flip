@@ -1,18 +1,22 @@
 .planets {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid black;
+  box-sizing: border-box;
+  width: 362px;
+  border: 1px solid red;
 }
 
-.planets div,
-.planets--f div {
-  height: 100px;
-  background-color: black;
-  margin: 10px;
-  width: 100px;
+.planets .outer,
+.planets--f .outer {
+  display: inline-block;
+  padding: 10px;
 }
 
 .planets--f {
-  display: flex;
-  border: 1px solid black;
+  border: 1px solid red;
+  width: 120px;
+}
+
+.inner {
+  background-color: black;
+  height: 100px;
+  width: 100px;
 }

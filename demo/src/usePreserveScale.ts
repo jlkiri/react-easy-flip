@@ -9,9 +9,11 @@ export const usePreserveScale = (
   pscale: MutableRefObject<Scale | null>,
   cachedPosition: CachedPosition,
   dep: any,
-  isPlaying: MutableRefObject<boolean>
+  isPlaying: MutableRefObject<boolean>,
+  noPreserve: boolean,
 ) => {
   useLayoutEffect(() => {
+    if (noPreserve) return
     const el = document.getElementById(flipId)
     if (!el) return
     if (!pscale.current) return
@@ -21,24 +23,26 @@ export const usePreserveScale = (
       const rScaleY = 1 / pscale.current.scaleY
       child.style.transform = `scale(${rScaleX}, ${rScaleY})`
     }
-  }, [flipId, pscale, dep])
+  }, [flipId, pscale, dep, noPreserve])
 
   useEffect(() => {
+    if (noPreserve) return
     let raf: any
     const el = document.getElementById(flipId)
     if (!el) return
     if (cachedPosition.isNull()) return
 
     function adjustChildScale() {
+
       if (!isPlaying.current) {
+        console.log('STOPPING')
         cancelAnimationFrame(raf)
         return
       }
 
-      console.log('aaa')
-
       const inProgressRect = el!.getBoundingClientRect()
       for (const child of el!.children as HTMLCollectionOf<HTMLElement>) {
+        // console.log(child.getBoundingClientRect().left)
         const { scaleX, scaleY } = invertScale(
           inProgressRect,
           cachedPosition.getPosition()!
@@ -46,11 +50,11 @@ export const usePreserveScale = (
         const rScaleX = 1 / scaleX
         const rScaleY = 1 / scaleY
         child.style.transform = `scale(${rScaleX}, ${rScaleY})`
-        requestAnimationFrame(adjustChildScale)
       }
+      requestAnimationFrame(adjustChildScale)
     }
 
     raf = requestAnimationFrame(adjustChildScale)
     return () => cancelAnimationFrame(raf)
-  }, [flipId, cachedPosition, dep, isPlaying])
+  }, [flipId, cachedPosition, dep, noPreserve, isPlaying])
 }
