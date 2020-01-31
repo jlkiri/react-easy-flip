@@ -1,5 +1,7 @@
 import { Position } from './types'
 
+export type Scale = ReturnType<typeof invertScale>
+
 export function invertScale(
   rectA: Position,
   rectB: Position,

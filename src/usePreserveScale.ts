@@ -1,11 +1,15 @@
-import { useEffect, useLayoutEffect } from 'react'
-import { invertScale } from './helpers'
+import { useEffect, useLayoutEffect, MutableRefObject } from 'react'
+import { invertScale, Scale } from './helpers'
+import { usePosition } from './usePosition'
+
+type CachedPosition = ReturnType<typeof usePosition>
 
 export const usePreserveScale = (
-  flipId: any,
-  pscale: any,
-  cachedPosition: any,
-  dep: any
+  flipId: string,
+  pscale: MutableRefObject<Scale | null>,
+  cachedPosition: CachedPosition,
+  dep: any,
+  isPlaying: MutableRefObject<boolean>
 ) => {
   useLayoutEffect(() => {
     const el = document.getElementById(flipId)
@@ -26,11 +30,16 @@ export const usePreserveScale = (
     if (cachedPosition.isNull()) return
 
     function adjustChildScale() {
+      if (!isPlaying.current) {
+        cancelAnimationFrame(raf)
+        return
+      }
+
       const inProgressRect = el!.getBoundingClientRect()
       for (const child of el!.children as HTMLCollectionOf<HTMLElement>) {
         const { scaleX, scaleY } = invertScale(
           inProgressRect,
-          cachedPosition.getPosition()
+          cachedPosition.getPosition()!
         )
         const rScaleX = 1 / scaleX
         const rScaleY = 1 / scaleY
@@ -41,5 +50,5 @@ export const usePreserveScale = (
 
     raf = requestAnimationFrame(adjustChildScale)
     return () => cancelAnimationFrame(raf)
-  }, [flipId, cachedPosition, dep])
+  }, [flipId, cachedPosition, dep, isPlaying])
 }

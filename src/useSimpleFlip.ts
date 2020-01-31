@@ -2,11 +2,9 @@ import { useRef, useEffect, useLayoutEffect } from 'react'
 import * as Rematrix from 'rematrix'
 import { Position, USF } from './types'
 import { DEFAULT_OPTIONS } from './const'
-import { invertScale, invertXY } from './helpers'
+import { invertScale, invertXY, Scale } from './helpers'
 import { usePreserveScale } from './usePreserveScale'
 import { usePosition } from './usePosition'
-
-type Scale = ReturnType<typeof invertScale>
 
 const noop = () => {}
 
@@ -132,5 +130,5 @@ export const useSimpleFlip: USF = ({
     return () => el.removeEventListener('transitionend', onTransitionEndCb)
   }, [flipId, flag, delay, _onTransitionEnd, cachedPosition, easing, duration])
 
-  usePreserveScale(flipId, parentScale, cachedPosition, flag)
+  usePreserveScale(flipId, parentScale, cachedPosition, flag, isPlaying)
 }
