@@ -86,7 +86,14 @@ export const useFlipGroup: UFG = ({
           // if they are not explicitly specified, it is recommended to disable
           // animations until all transitions are finished (event handling)
           const rect = child.getBoundingClientRect()
-          // console.log('cached', cachedPos)
+          console.log('parentpos', parentPosition.current)
+          console.log('parentrect')
+
+          const parentRect = child.parentElement!.getBoundingClientRect();
+          const pdx = parentPosition.current!.left! - parentRect.left
+          const pdy = parentPosition.current!.top! - parentRect.top
+
+          console.log(pdx, pdy)
 
           const compStyles = window.getComputedStyle(child)
 
@@ -102,6 +109,8 @@ export const useFlipGroup: UFG = ({
             top: rect.top,
             left: rect.left
           }
+
+          console.log('nextRect', nextRect)
 
           const { scaleX, scaleY } = invertScale(cachedPos, nextRect, matrix)
           const { translateX, translateY } = invertXY(
@@ -135,9 +144,11 @@ export const useFlipGroup: UFG = ({
     let firedOnce = false
 
     // Update saved DOM cachedPositions and invoke callback
-    function onTransitionEndCb(e: TransitionEvent) {
+    function onTransitionEndCb(e: any) {
       if (!firedOnce) {
-        firedOnce = true
+        // firedOnce = true
+        cachedPositions.current![e.target.dataset.id] = e.target.getBoundingClientRect()
+        console.log(e.target.getBoundingClientRect())
         if (onTransitionEnd) {
           onTransitionEnd()
         }
