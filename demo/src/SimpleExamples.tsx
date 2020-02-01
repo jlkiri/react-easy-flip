@@ -1,28 +1,24 @@
-import React, { useRef, useCallback, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import './App.css'
 import { useFlipGroup } from 'react-easy-flip'
 import { useSimpleFlip } from 'react-easy-flip'
 
-const items = [
-  { id: 'woekfow' },
-  { id: 'owkefowkoef' },
-  { id: 'owkwefwkoef' },
-  { id: 'owogwg9oef' },
-  { id: 'ow28urf8280ef' },
-  { id: '238yfh928' },
-  { id: '23r9u90j2f2' },
-  { id: 'fj8h27yf82' }
-]
-
 function SharedTransitionApp() {
   const [clicked, setClicked] = useState(false)
   const [id, setId] = useState('')
-  const [isTransitionOver, setisTransitionOver] = useState(false)
 
-  const onTransitionEnd = useCallback(() => {
-    setisTransitionOver(!isTransitionOver)
-    isTransitionOver && console.log('clickable now!')
-  }, [isTransitionOver])
+  const items = [
+    { id: 1 },
+    { id: 2 },
+    { id: 3 },
+    { id: 4 },
+    { id: 5 },
+    { id: 6 },
+    { id: 7 },
+    { id: 8 },
+    { id: 9 },
+    { id: 10 }
+  ]
 
   useSimpleFlip({
     flipId: id,
@@ -41,8 +37,8 @@ function SharedTransitionApp() {
         {items.map((item, i) => {
           return (
             <div
-              id={item.id}
-              onClick={() => handleClick(item.id)}
+              id={item.id.toString()}
+              onClick={() => handleClick(item.id.toString())}
               className={'minisq'}
             >
               <div className={'circle'}>
@@ -61,37 +57,6 @@ function SharedTransitionApp() {
         <div className="innerCircle"></div>
       </div>
     </section>
-  )
-}
-
-function SimpleFlipApp2() {
-  const ref = useRef(null)
-  const [clicked, setClicked] = useState(false)
-
-  const flipId = 'qqq'
-
-  let abc = ['A', 'B', 'C', 'D', 'E', 'F']
-  // useSimpleFlip({ flipId, flag: clicked })
-  // useFlipGroup({ flipId, deps: clicked })
-
-  function handleClick() {
-    setClicked(!clicked)
-  }
-
-  abc = clicked ? abc.reverse() : abc
-
-  return (
-    <div
-      id={flipId}
-      onClick={handleClick}
-      className={clicked ? 'vertical' : 'horizontal'}
-    >
-      {abc.map((l, i) => (
-        <div data-id={l} key={i} className="letter">
-          {l}
-        </div>
-      ))}
-    </div>
   )
 }
 

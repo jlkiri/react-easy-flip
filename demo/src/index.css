@@ -9,7 +9,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
+  overflow-x: hidden;
+  font-family: monospace;
+  font-size: 20px;
+  background-color: rgb(243, 243, 243);
 }
 
 code {
