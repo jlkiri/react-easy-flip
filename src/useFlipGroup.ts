@@ -92,13 +92,15 @@ export const useFlipGroup: UFG = ({
 
           const appliedWidth = parseInt(compStyles.width!, 10)
           const appliedHeight = parseInt(compStyles.height!, 10)
+          const appliedTop = rect.top - matrix[13]
+          const appliedLeft = rect.left - matrix[12]
 
           const nextRect = {
             ...rect,
             width: appliedWidth,
             height: appliedHeight,
-            top: rect.top,
-            left: rect.left
+            top: appliedTop,
+            left: appliedLeft
           }
 
           const { scaleX, scaleY } = invertScale(cachedPos, nextRect, matrix)
@@ -130,15 +132,13 @@ export const useFlipGroup: UFG = ({
     if (cachedPositions.current == null || parentPosition.current == null)
       return
 
-    let firedOnce = false
-
     // Update saved DOM cachedPositions and invoke callback
-    function onTransitionEndCb(e: TransitionEvent) {
-      if (!firedOnce) {
-        firedOnce = true
-        if (onTransitionEnd) {
-          onTransitionEnd()
-        }
+    function onTransitionEndCb(e: any) {
+      cachedPositions.current![
+        e.target.dataset.id
+      ] = e.target.getBoundingClientRect()
+      if (onTransitionEnd) {
+        onTransitionEnd()
       }
     }
 

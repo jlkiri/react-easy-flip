@@ -1,10 +1,7 @@
 import React, { useRef, useCallback, useState } from 'react'
 import './App.css'
-import { useFlipGroup } from './useFlipGroup'
-import { useSimpleFlip } from './useSimpleFlip'
-// import { useSharedElementTransition } from './useSharedTransition'
-
-const noop = () => {}
+import { useFlipGroup } from 'react-easy-flip'
+import { useSimpleFlip } from 'react-easy-flip'
 
 const items = [
   { id: 'woekfow' },
@@ -27,17 +24,11 @@ function SharedTransitionApp() {
     isTransitionOver && console.log('clickable now!')
   }, [isTransitionOver])
 
-  /* useSharedElementTransition({
-    flipId: id,
-    dep: clicked,
-    onTransitionEnd: onTransitionEnd
-  }) */
-
-  /* useSimpleFlip({
+  useSimpleFlip({
     flipId: id,
     flag: clicked,
     isShared: true
-  }) */
+  })
 
   function handleClick(id: string) {
     setId(id)
@@ -109,7 +100,7 @@ function SimpleFlipApp() {
 
   const flipId = 'simple'
 
-  // useSimpleFlip({ flipId, flag: clicked })
+  useSimpleFlip({ flipId, noPreserve: false, flag: clicked })
 
   function handleClick() {
     setClicked(!clicked)

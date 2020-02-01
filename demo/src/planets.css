@@ -11,6 +11,9 @@
 }
 
 .planets--f {
+  position: relative;
+  top: 100px;
+  left: 100px;
   border: 1px solid red;
   width: 120px;
 }

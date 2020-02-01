@@ -6,12 +6,19 @@ import { invertScale, invertXY, Scale } from './helpers'
 import { usePreserveScale } from './usePreserveScale'
 import { usePosition } from './usePosition'
 
-const noop = () => { }
+const noop = () => {}
+
+export const convertMatrix3dArrayTo2dArray = (matrix: any): any =>
+  [0, 1, 4, 5, 12, 13].map((index) => matrix[index])
+
+export const convertMatrix2dArrayToString = (matrix: any) =>
+  `matrix(${matrix.join(', ')})`
 
 export const useSimpleFlip: USF = ({
   flipId,
   flag,
   onTransitionEnd,
+  noPreserve = false,
   isShared = false,
   opts = DEFAULT_OPTIONS
 }) => {
@@ -67,11 +74,16 @@ export const useSimpleFlip: USF = ({
 
     const cachedPos = cachedPosition.getPosition() as Position
 
-    // Get height/width of the currently applied style (getBCR gives wrong values)
-    const appliedWidth = parseInt(compStyles.width!, 10)
-    const appliedHeight = parseInt(compStyles.height!, 10)
-    const appliedTop = parseInt(compStyles.top!, 10)
-    const appliedLeft = parseInt(compStyles.left!, 10)
+    // Get height/width of the currently applied style (getBCR gives wrong values?)
+    const appliedWidth = isShared
+      ? parseInt(compStyles.width!, 10)
+      : Math.max(rect.width / matrix[0], 0.001)
+    const appliedHeight = isShared
+      ? parseInt(compStyles.height!, 10)
+      : Math.max(rect.height / matrix[5], 0.001)
+    const appliedTop = rect.top - matrix[13]
+    const appliedLeft = rect.left - matrix[12]
+
     const nextRect = {
       ...rect,
       width: appliedWidth,
@@ -96,7 +108,9 @@ export const useSimpleFlip: USF = ({
 
     // Invert
     el.style.transition = ``
-    el.style.transform = Rematrix.toString(tf)
+    el.style.transform = convertMatrix2dArrayToString(
+      convertMatrix3dArrayTo2dArray(tf)
+    )
     el.style.transformOrigin = transformOrigin
 
     isPlaying.current = true
@@ -107,7 +121,6 @@ export const useSimpleFlip: USF = ({
   useEffect(() => {
     const el = document.getElementById(flipId)
     if (!el) return
-    if (cachedPosition.isNull()) return
 
     function onTransitionEndCb(this: any, e: any) {
       // Prevent handling of bubbled events from children
@@ -128,7 +141,14 @@ export const useSimpleFlip: USF = ({
 
     el.addEventListener('transitionend', onTransitionEndCb)
     return () => el.removeEventListener('transitionend', onTransitionEndCb)
-  }, [flipId, flag, delay, _onTransitionEnd, cachedPosition, easing, duration])
+  }, [flipId, flag, delay, _onTransitionEnd, easing, duration])
 
-  usePreserveScale(flipId, parentScale, cachedPosition, flag, isPlaying)
+  usePreserveScale(
+    flipId,
+    parentScale,
+    cachedPosition,
+    flag,
+    isPlaying,
+    noPreserve
+  )
 }

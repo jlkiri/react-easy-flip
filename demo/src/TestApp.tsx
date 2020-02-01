@@ -9,8 +9,8 @@ import { ReactComponent as Mars } from './planets/mars.svg'
 import { ReactComponent as Jupiter } from './planets/jupiter.svg'
 import { ReactComponent as Saturn } from './planets/saturn.svg'
 import './planets.css'
-import { useFlipGroup } from './useFlipGroup'
-import { useSimpleFlip } from './useSimpleFlip'
+import { useFlipGroup } from 'react-easy-flip'
+import { useSimpleFlip } from 'react-easy-flip'
 
 const itemCollection = [
   { id: 1, comp: <Mercury /> },
@@ -45,7 +45,6 @@ export function TestApp() {
 
   useSimpleFlip({
     flipId,
-    noPreserve: false,
     flag
   })
 
