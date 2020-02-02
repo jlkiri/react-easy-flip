@@ -8580,8 +8580,10 @@ react-dom@^16.12.0:
     prop-types "^15.6.2"
     scheduler "^0.18.0"
 
-"react-easy-flip@file:../lib":
-  version "0.0.0"
+react-easy-flip@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/react-easy-flip/-/react-easy-flip-3.0.0.tgz#b8125734a95e77fe39f50d2e2db60ffd9b3be2b3"
+  integrity sha512-O5DLtY2vSS2L+HGWWuzSov6i2klzBa+jja7l3UhTH4LRNDTjNmeZY5OegMwnxUxGLM5jU48pimW3HS/eOKR5qQ==
 
 react-error-overlay@^6.0.4:
   version "6.0.4"
