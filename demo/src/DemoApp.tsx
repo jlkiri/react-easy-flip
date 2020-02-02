@@ -187,11 +187,17 @@ export const Dashboard = ({ setRouteId, onRouteChange }: any) => {
 
   useFlipGroup({
     flipId: flipGroupId,
+    opts: {
+      duration: 750
+    },
     deps: compactView
   })
 
   useFlipGroup({
     flipId: flipGroupId,
+    opts: {
+      duration: 1000
+    },
     deps: items
   })
 
@@ -252,7 +258,7 @@ export const Dashboard = ({ setRouteId, onRouteChange }: any) => {
                   className="outer"
                   data-id={item.id}
                 >
-                  {item.component}
+                  <Link to={item.name}>{item.component}</Link>
                 </div>
               )
             })}
@@ -313,7 +319,7 @@ const Toggles: React.FC<ToggleProps> = ({
       <div>
         Sort by distance from the Sun:{' '}
         <button onClick={sortByOrderAsc}>From closest</button>
-        <button onClick={sortByOrderDesc}>From furthest</button>
+        <button onClick={sortByOrderDesc}>From farthest</button>
       </div>
       <button disabled={!toggleClickable} onClick={expandToggle}>
         Expand / Compact

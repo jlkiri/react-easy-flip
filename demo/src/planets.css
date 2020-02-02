@@ -77,6 +77,20 @@ header a {
   display: inline-block;
 }
 
+.outer svg:hover {
+  animation: spin 500ms;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .planet-full {
   display: flex;
   flex-direction: column;
