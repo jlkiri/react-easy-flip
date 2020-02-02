@@ -1,7 +1,7 @@
 {
   "name": "react-easy-flip",
-  "version": "2.0.1",
-  "description": "A React library for animation using FLIP technique",
+  "version": "3.0.0",
+  "description": "A small React library for smooth FLIP animations",
   "source": "src/index.ts",
   "types": "lib/index.d.ts",
   "main": "lib/index.js",
@@ -48,11 +48,11 @@
     "jest": "^24.9.0",
     "microbundle": "^0.11.0",
     "prettier": "^1.19.1",
-    "raf": "^3.4.1",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-scripts": "3.2.0",
     "react-test-renderer": "^16.11.0",
+    "rematrix": "^0.4.1",
     "ts-jest": "^24.3.0",
     "typescript": "^3.7.5"
   },

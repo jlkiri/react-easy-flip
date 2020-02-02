@@ -1,0 +1,142 @@
+.inner {
+  background-color: black;
+  height: 100px;
+  width: 100px;
+}
+
+.main {
+  height: 100vh;
+  width: 100vw;
+  text-align: center;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 55px 0;
+}
+
+header a {
+  color: red;
+}
+
+.toggles {
+  padding: 25px;
+  font-size: 16px;
+}
+
+.toggles button {
+  background: none;
+  background-color: white;
+  box-shadow: 2px 2px 3px 0px lightgray;
+  border: 0px;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  appearance: none;
+  transition: 300ms;
+  margin: 0 5px;
+}
+
+.toggles button:hover {
+  background-color: rgba(132, 39, 145, 0.212);
+}
+
+.toggles div {
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+.planet-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.planets,
+.planets--compact {
+  padding: 10px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 2px 2px 3px 0px lightgray;
+}
+
+.planets {
+  width: 140px;
+  height: 100%;
+}
+
+.planets--compact {
+  height: 380px;
+  width: 380px;
+}
+
+.outer {
+  display: inline-block;
+}
+
+.outer svg:hover {
+  animation: spin 500ms;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.planet-full {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 100px;
+  height: 100vh;
+  width: 100vw;
+}
+
+.planet-full a {
+  margin-top: 20px;
+}
+
+.planet-description {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.planet-description div:nth-of-type(2) {
+  margin-top: 50px;
+}
+
+.planets .outer,
+.planets--compact .outer {
+  padding: 10px;
+}
+
+.planet-info {
+  display: inline-block;
+  width: 250px;
+}
+
+.planet-info div {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 23px;
+}
+
+.planet-text {
+  transition: 1s;
+}
+
+.shifted {
+  transform: translateX(1000px);
+}

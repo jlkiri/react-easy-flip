@@ -3,14 +3,15 @@
 
 import { renderHook } from '@testing-library/react-hooks'
 import React from 'react'
-import { useFlipAnimation } from '../useFlipAnimation'
-import { TestRef, Position } from '../types'
+import { useFlipGroup } from '../useFlipGroup'
+import { TestRef, Positions } from '../types'
 
 it('Properly stores child state in a ref object', () => {
   const MAX_RENDERS = 2
+  const FLIP_ID = 'TEST'
 
   const rootRef = React.createRef() as React.MutableRefObject<TestRef>
-  const positionByRender: Position = {}
+  const positionByRender: Positions = {}
 
   let renderNumber = 1
 
@@ -21,17 +22,20 @@ it('Properly stores child state in a ref object', () => {
     key: string,
     pos: ClientRect | DOMRect
   ) => {
+    console.log('hiiihhhhihihihii')
     if (renderNumber <= MAX_RENDERS) {
       positionByRender[`${key}-${renderNumber}`] = pos
     }
   }
+
+  rootRef.current.log = (msg) => console.log(msg)
 
   // Mock listeners
   rootRef.current.addEventListener = (name, _) => {
     console.log(`${name} successfully added`)
 
     if (name === 'transitionend') {
-      rootRef.current.onTransitionEnd = (positions: Position) => {
+      rootRef.current.onTransitionEnd = (positions: Positions) => {
         Object.entries(positions).forEach(([key, val]) => {
           rootRef.current.getChildPosition!(key, val)
         })
@@ -49,16 +53,24 @@ it('Properly stores child state in a ref object', () => {
       dataset: {
         id: `first`
       },
+      style: {
+        transform: '',
+        transition: ''
+      },
       getBoundingClientRect() {
-        return { top: 0, left: 100 }
+        return { top: 0, left: 100, width: 200, height: 200 }
       }
     },
     {
       dataset: {
         id: `second`
       },
+      style: {
+        transform: '',
+        transition: ''
+      },
       getBoundingClientRect() {
-        return { top: 0, left: 150 }
+        return { top: 0, left: 150, width: 400, height: 400 }
       }
     }
   ]
@@ -69,13 +81,14 @@ it('Properly stores child state in a ref object', () => {
   ]
 
   const initialArgs = {
-    root: rootRef,
+    flipId: FLIP_ID,
     deps: initialDeps,
     opts: { transition: 0, delay: 0, easing: 'ease' },
-    __TEST__: true
+    __TEST__: true,
+    __TEST_REF__: rootRef
   }
 
-  const { rerender } = renderHook((args) => useFlipAnimation(args as any), {
+  const { rerender } = renderHook((args) => useFlipGroup(args as any), {
     initialProps: initialArgs
   })
 
@@ -84,16 +97,24 @@ it('Properly stores child state in a ref object', () => {
       dataset: {
         id: `second`
       },
+      style: {
+        transform: '',
+        transition: ''
+      },
       getBoundingClientRect() {
-        return { top: 0, left: 100 }
+        return { top: 0, left: 100, width: 400, height: 400 }
       }
     },
     {
       dataset: {
         id: `first`
       },
+      style: {
+        transform: '',
+        transition: ''
+      },
       getBoundingClientRect() {
-        return { top: 0, left: 150 }
+        return { top: 0, left: 150, width: 200, height: 200 }
       }
     }
   ]
@@ -106,13 +127,16 @@ it('Properly stores child state in a ref object', () => {
   renderNumber++
 
   const nextArgs = {
-    root: rootRef,
+    flipId: FLIP_ID,
     deps: nextDeps,
     opts: { transition: 0, delay: 0, easing: 'ease' },
-    __TEST__: true
+    __TEST__: true,
+    __TEST_REF__: rootRef
   }
 
   rerender(nextArgs)
+
+  console.log(positionByRender)
 
   expect(positionByRender[`first-1`].left).toBe(
     positionByRender['second-2'].left
