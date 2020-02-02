@@ -8,6 +8,7 @@ import { usePosition } from './usePosition'
 
 const noop = () => {}
 
+// cf. https://github.com/aholachek/react-flip-toolkit/blob/a9f2c75584773b16c9e291f9caa0070247a99744/packages/react-flip-toolkit/src/FlipToolkit/flip/animateFlippedElements/index.ts
 export const convertMatrix3dArrayTo2dArray = (matrix: any): any =>
   [0, 1, 4, 5, 12, 13].map((index) => matrix[index])
 
@@ -18,7 +19,6 @@ export const useSimpleFlip: USF = ({
   flipId,
   flag,
   onTransitionEnd,
-  noPreserve = false,
   isShared = false,
   opts = DEFAULT_OPTIONS
 }) => {
@@ -143,12 +143,5 @@ export const useSimpleFlip: USF = ({
     return () => el.removeEventListener('transitionend', onTransitionEndCb)
   }, [flipId, flag, delay, _onTransitionEnd, easing, duration])
 
-  usePreserveScale(
-    flipId,
-    parentScale,
-    cachedPosition,
-    flag,
-    isPlaying,
-    noPreserve
-  )
+  usePreserveScale(flipId, parentScale, cachedPosition, flag, isPlaying)
 }

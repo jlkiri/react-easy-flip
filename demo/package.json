@@ -16,14 +16,14 @@
     "react-easy-flip": "file:../lib",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.3.0",
-    "rematrix": "^0.4.1",
     "typescript": "~3.7.2"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "update-lib": "rimraf ./node_modules/react-easy-flip && yarn install --check-files"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -39,5 +39,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.1"
   }
 }

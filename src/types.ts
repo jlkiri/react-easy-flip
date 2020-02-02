@@ -43,7 +43,6 @@ export interface SimpleFlipArgs {
   flipId: string
   flag: boolean
   onTransitionEnd?: () => void
-  noPreserve?: boolean
   isShared?: boolean
   opts?: FlipOptions
   __TEST__?: boolean
