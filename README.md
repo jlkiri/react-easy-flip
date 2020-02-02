@@ -126,7 +126,7 @@ https://codesandbox.io/s/list-shuffling-flip-hlguz
 
 ### Shared element transition
 
-This is an example of so-called shared element transition. Click on any square with the Moon in it. Note that the black background and the Moon are different elements (with different parents) after the click, yet the animation remains smooth despite the DOM unmount.
+This is an example of so-called shared element transition. Click on any square with the Moon in it. Note that the black background and the Moon are different elements (with different parents) after the click, yet the animation remains smooth despite the DOM unmount. This technique is done fairly easiy with `useSimpleFlip` and can even be used to animate elements across pages in SPA.
 
 https://codesandbox.io/s/shared-element-transition-flip-9orsy
 
