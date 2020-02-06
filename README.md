@@ -61,7 +61,9 @@ c) a special flag that tells the hook whether the transition is "shared"
 
 ### useFlipGroup
 
-`useFlipGroup` requires one argument, which is minimally an object with the `id` of your animated element and hook [dependencies](https://reactjs.org/docs/hooks-reference.html#conditionally-firing-an-effect). Just like in `useSimpleFlip` you may optionally provide:
+`useFlipGroup` requires one argument, which is minimally an object with the `id` of your animated element and hook [dependencies](https://reactjs.org/docs/hooks-reference.html#conditionally-firing-an-effect). You _must_ also attach a unique `data-id` to every child that you want to animate (see examples below). The `data-id` can be the same as a `key` prop.
+
+Just like in `useSimpleFlip` you may optionally provide:
 
 a) a callback to be executed after an animation is done: `onTransitionEnd`
 b) CSS transition options
