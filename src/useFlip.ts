@@ -1,35 +1,36 @@
 import { useEffect, useRef, useLayoutEffect } from 'react'
 
-interface Pos {
-  [id: string]: DOMRect | ClientRect
+type Rect = DOMRect
+type Time = number
+type FlipID = string
+
+interface CachedStyles {
+  [id: string]: { styles: any; rect: Rect }
 }
 
 interface Animations {
-  [id: string]: Animation
+  [id: string]: { animation: Animation; offset: Time; previousTime: Time }
 }
 
 interface FlipHtmlElement extends Element {
   dataset: {
-    flipId: string
+    flipId: FlipID
   }
 }
 
-const hasKeys = (obj: object) => Object.keys(obj).length >= 1
+const not = (bool: boolean) => !bool
+const empty = (obj: object) => Object.keys(obj).length === 0
 
 const getChildren = (rootElm: Element) =>
   rootElm.children as HTMLCollectionOf<FlipHtmlElement>
 
 const isRunning = (animation: Animation) => animation.playState === 'running'
 
-const getTranslateX = (
-  cachedRect: DOMRect | ClientRect,
-  nextRect: DOMRect | ClientRect
-) => cachedRect.left - nextRect.left
+const getTranslateX = (cachedRect: DOMRect, nextRect: DOMRect) =>
+  cachedRect.x - nextRect.x
 
-const getTranslateY = (
-  cachedRect: DOMRect | ClientRect,
-  nextRect: DOMRect | ClientRect
-) => cachedRect.top - nextRect.top
+const getTranslateY = (cachedRect: DOMRect, nextRect: DOMRect) =>
+  cachedRect.y - nextRect.y
 
 const getScaleX = (
   cachedRect: DOMRect | ClientRect,
@@ -41,57 +42,98 @@ const getScaleY = (
   nextRect: DOMRect | ClientRect
 ) => cachedRect.height / Math.max(nextRect.height, 0.001)
 
-export const useFlip = (rootId: string) => {
-  const cachedPositions = useRef<Pos>(Object.create(null))
+export const useFlip2 = (rootId: string) => {
+  const cachedPositions = useRef<CachedStyles>(Object.create(null))
   const cachedAnimations = useRef<Animations>(Object.create(null))
 
+  for (const [flipId] of Object.entries(cachedPositions.current)) {
+    const element = document.querySelector(`[data-flip-id=${flipId}]`)
+
+    if (not(empty(cachedAnimations)) && element) {
+      const cache = cachedAnimations.current[flipId]
+
+      if (cache && cache.animation && isRunning(cache.animation)) {
+        cachedPositions.current[flipId].rect = element.getBoundingClientRect()
+        cache.previousTime = cache.animation.currentTime || 0
+        cache.offset = 800
+        cache.animation.finish()
+      }
+    }
+  }
+
   useEffect(() => {
-    const elmt = document.getElementById(rootId)!
-    for (const child of getChildren(elmt)) {
-      const { flipId } = child.dataset
-      cachedPositions.current[flipId] = child.getBoundingClientRect()
+    const roots = document.querySelectorAll(`[data-flip-root-id=${rootId}]`)!
+    for (const root of roots) {
+      const flippableElements = root.querySelectorAll(`[data-flippable=true]`)
+      for (const element of flippableElements) {
+        const { flipId } = (element as FlipHtmlElement).dataset
+        cachedPositions.current[flipId] = {
+          styles: {
+            bgColor: getComputedStyle(element).getPropertyValue(
+              'background-color'
+            )
+          },
+          rect: element.getBoundingClientRect()
+        }
+      }
     }
   }, [rootId])
 
   useLayoutEffect(() => {
-    if (!hasKeys(cachedPositions.current)) {
+    if (empty(cachedPositions.current)) {
       return
     }
 
-    const elmt = document.getElementById(rootId)
+    for (const [flipId, { rect: cachedRect, styles }] of Object.entries(
+      cachedPositions.current
+    )) {
+      const flipElement = document.querySelector(`[data-flip-id=${flipId}]`)
 
-    if (!elmt) return
+      if (flipElement) {
+        const nextRect = flipElement.getBoundingClientRect()
 
-    for (const child of getChildren(elmt)) {
-      const { flipId } = child.dataset
-      const allAnimations = cachedAnimations.current
+        const translateY = getTranslateY(cachedRect, nextRect)
+        const translateX = getTranslateX(cachedRect, nextRect)
+        const scaleX = getScaleX(cachedRect, nextRect)
+        const scaleY = getScaleY(cachedRect, nextRect)
 
-      if (hasKeys(allAnimations)) {
-        const cachedAnimation = allAnimations[flipId]
-        if (cachedAnimation && isRunning(cachedAnimation)) {
-          cachedAnimation.cancel()
+        cachedPositions.current[flipId].rect = nextRect
+
+        cachedAnimations.current[flipId] = cachedAnimations.current[flipId] || {
+          animation: null,
+          offset: 800,
+          previousTime: 0
         }
-      }
 
-      const cachedRect = cachedPositions.current[flipId]
-      const nextRect = child.getBoundingClientRect()
-
-      const translateY = getTranslateY(cachedRect, nextRect)
-      const translateX = getTranslateX(cachedRect, nextRect)
-      const scaleX = getScaleX(cachedRect, nextRect)
-      const scaleY = getScaleY(cachedRect, nextRect)
-
-      cachedPositions.current[flipId] = nextRect
-
-      allAnimations[flipId] = child.animate(
-        [
+        const effect = new KeyframeEffect(
+          flipElement,
+          [
+            {
+              transform: `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`,
+              backgroundColor: styles.bgColor
+            },
+            {
+              transform: `translate(0px, 0px) scale(1,1)`,
+              backgroundColor: getComputedStyle(flipElement).getPropertyValue(
+                'background-color'
+              )
+            }
+          ],
           {
-            transform: `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
-          },
-          { transform: `translate(0px, 0px) scale(1,1)` }
-        ],
-        { duration: 500, fill: 'forwards' }
-      )
+            duration: 800,
+            fill: 'both',
+            easing: 'ease-in-out'
+          }
+        )
+
+        cachedAnimations.current[flipId].previousTime = 0
+
+        const animation = new Animation(effect, document.timeline)
+
+        cachedAnimations.current[flipId].animation = animation
+
+        animation.play()
+      }
     }
   })
 }
