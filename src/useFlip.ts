@@ -1,6 +1,3 @@
-import { useEffect, useRef, useLayoutEffect } from 'react'
-
-type Rect = DOMRect
 type Time = number
 type FlipID = string
 
@@ -15,6 +12,7 @@ interface Animations {
 interface FlipHtmlElement extends Element {
   dataset: {
     flipId: FlipID
+    onlyColor: boolean
   }
 }
 
@@ -42,7 +40,7 @@ const getScaleY = (
   nextRect: DOMRect | ClientRect
 ) => cachedRect.height / Math.max(nextRect.height, 0.001)
 
-export const useFlip2 = (rootId: string) => {
+const useFlip2 = (rootId: string) => {
   const cachedPositions = useRef<CachedStyles>(Object.create(null))
   const cachedAnimations = useRef<Animations>(Object.create(null))
 
@@ -64,7 +62,7 @@ export const useFlip2 = (rootId: string) => {
   useEffect(() => {
     const roots = document.querySelectorAll(`[data-flip-root-id=${rootId}]`)!
     for (const root of roots) {
-      const flippableElements = root.querySelectorAll(`[data-flippable=true]`)
+      const flippableElements = root.querySelectorAll(`[data-flip-id]`)
       for (const element of flippableElements) {
         const { flipId } = (element as FlipHtmlElement).dataset
         cachedPositions.current[flipId] = {
@@ -75,6 +73,10 @@ export const useFlip2 = (rootId: string) => {
           },
           rect: element.getBoundingClientRect()
         }
+        console.log(
+          'from',
+          getComputedStyle(element).getPropertyValue('background-color')
+        )
       }
     }
   }, [rootId])
@@ -92,6 +94,11 @@ export const useFlip2 = (rootId: string) => {
       if (flipElement) {
         const nextRect = flipElement.getBoundingClientRect()
 
+        console.log(
+          'to',
+          getComputedStyle(flipElement).getPropertyValue('background-color')
+        )
+
         const translateY = getTranslateY(cachedRect, nextRect)
         const translateX = getTranslateX(cachedRect, nextRect)
         const scaleX = getScaleX(cachedRect, nextRect)
@@ -105,6 +112,10 @@ export const useFlip2 = (rootId: string) => {
           previousTime: 0
         }
 
+        const nextColor = getComputedStyle(flipElement).getPropertyValue(
+          'background-color'
+        )
+
         const effect = new KeyframeEffect(
           flipElement,
           [
@@ -114,19 +125,19 @@ export const useFlip2 = (rootId: string) => {
             },
             {
               transform: `translate(0px, 0px) scale(1,1)`,
-              backgroundColor: getComputedStyle(flipElement).getPropertyValue(
-                'background-color'
-              )
+              backgroundColor: nextColor
             }
           ],
           {
-            duration: 800,
+            duration: 500,
             fill: 'both',
             easing: 'ease-in-out'
           }
         )
 
         cachedAnimations.current[flipId].previousTime = 0
+
+        cachedPositions.current[flipId].styles.bgColor = nextColor
 
         const animation = new Animation(effect, document.timeline)
 
