@@ -1,0 +1,53 @@
+h2 {
+  text-align: center;
+}
+
+input {
+  position: absolute;
+  right: 0;
+  margin-right: 7px;
+}
+
+li {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  min-width: 250px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  user-select: none;
+  background-color: rgb(221, 217, 210);
+}
+
+label {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding: 14px;
+
+  border-radius: 10px;
+  will-change: transform;
+}
+
+.checked {
+  background-color: rgb(255, 156, 121);
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+}
+
+.named-list {
+  padding: 30px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.list-item {
+  list-style: none;
+}

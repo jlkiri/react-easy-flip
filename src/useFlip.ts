@@ -1,4 +1,14 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useCallback,
+  useContext
+} from 'react'
+import { FlipProvider, FlipContext } from './FlipProvider'
+
+export { FlipProvider, FlipContext }
 
 type Time = number
 type FlipID = string
@@ -43,9 +53,11 @@ const getScaleY = (
   nextRect: DOMRect | ClientRect
 ) => cachedRect.height / Math.max(nextRect.height, 0.001)
 
-export const useFlip2 = (rootId: string) => {
+export const useFlip = (rootId: string) => {
   const cachedPositions = useRef<CachedStyles>(Object.create(null))
   const cachedAnimations = useRef<Animations>(Object.create(null))
+
+  useContext(FlipContext)
 
   for (const [flipId] of Object.entries(cachedPositions.current)) {
     const element = document.querySelector(`[data-flip-id=${flipId}]`)
@@ -76,10 +88,6 @@ export const useFlip2 = (rootId: string) => {
           },
           rect: element.getBoundingClientRect()
         }
-        console.log(
-          'from',
-          getComputedStyle(element).getPropertyValue('background-color')
-        )
       }
     }
   }, [rootId])
@@ -97,15 +105,22 @@ export const useFlip2 = (rootId: string) => {
       if (flipElement) {
         const nextRect = flipElement.getBoundingClientRect()
 
-        console.log(
-          'to',
-          getComputedStyle(flipElement).getPropertyValue('background-color')
+        const translateY = getTranslateY(
+          cachedRect as DOMRect,
+          nextRect as DOMRect
         )
-
-        const translateY = getTranslateY(cachedRect, nextRect)
-        const translateX = getTranslateX(cachedRect, nextRect)
+        const translateX = getTranslateX(
+          cachedRect as DOMRect,
+          nextRect as DOMRect
+        )
         const scaleX = getScaleX(cachedRect, nextRect)
         const scaleY = getScaleY(cachedRect, nextRect)
+
+        console.log(translateY)
+
+        if (translateX === 0 && translateY === 0) {
+          continue
+        }
 
         cachedPositions.current[flipId].rect = nextRect
 
