@@ -159,7 +159,7 @@ const AnimateInOut = ({
   const exiting = React.useRef(new Set<string>()).current
   const initialRender = React.useRef(true)
 
-  const forceRender = React.useContext(FlipContext)
+  const { forceRender } = React.useContext(FlipContext)
 
   const filteredChildren = onlyValidElements(children)
 

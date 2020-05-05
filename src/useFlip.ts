@@ -1,25 +1,13 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useCallback,
-  useContext
-} from 'react'
+import * as React from 'react'
 import { FlipProvider, FlipContext } from './FlipProvider'
 
 export { FlipProvider, FlipContext }
 
-type Time = number
 type FlipID = string
 type Rect = DOMRect | ClientRect
 
 interface CachedStyles {
   [id: string]: { styles: any; rect: Rect }
-}
-
-interface Animations {
-  [id: string]: { animation: Animation; offset: Time; previousTime: Time }
 }
 
 interface FlipHtmlElement extends Element {
@@ -54,10 +42,8 @@ const getScaleY = (
 ) => cachedRect.height / Math.max(nextRect.height, 0.001)
 
 export const useFlip = (rootId: string) => {
-  const cachedPositions = useRef<CachedStyles>(Object.create(null))
-  const cachedAnimations = useRef<Animations>(Object.create(null))
-
-  useContext(FlipContext)
+  const cachedPositions = React.useRef<CachedStyles>(Object.create(null))
+  const { cachedAnimations } = React.useContext(FlipContext)
 
   for (const [flipId] of Object.entries(cachedPositions.current)) {
     const element = document.querySelector(`[data-flip-id=${flipId}]`)
@@ -67,14 +53,12 @@ export const useFlip = (rootId: string) => {
 
       if (cache && cache.animation && isRunning(cache.animation)) {
         cachedPositions.current[flipId].rect = element.getBoundingClientRect()
-        cache.previousTime = cache.animation.currentTime || 0
-        cache.offset = 800
         cache.animation.finish()
       }
     }
   }
 
-  useEffect(() => {
+  React.useEffect(() => {
     const roots = document.querySelectorAll(`[data-flip-root-id=${rootId}]`)!
     for (const root of roots) {
       const flippableElements = root.querySelectorAll(`[data-flip-id]`)
@@ -92,7 +76,7 @@ export const useFlip = (rootId: string) => {
     }
   }, [rootId])
 
-  useLayoutEffect(() => {
+  React.useLayoutEffect(() => {
     if (empty(cachedPositions.current)) {
       return
     }
@@ -125,9 +109,7 @@ export const useFlip = (rootId: string) => {
         cachedPositions.current[flipId].rect = nextRect
 
         cachedAnimations.current[flipId] = cachedAnimations.current[flipId] || {
-          animation: null,
-          offset: 800,
-          previousTime: 0
+          animation: null
         }
 
         const nextColor = getComputedStyle(flipElement).getPropertyValue(
@@ -152,8 +134,6 @@ export const useFlip = (rootId: string) => {
             easing: 'ease-in-out'
           }
         )
-
-        cachedAnimations.current[flipId].previousTime = 0
 
         cachedPositions.current[flipId].styles.bgColor = nextColor
 
