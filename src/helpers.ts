@@ -8,3 +8,6 @@ export function debounce<F extends (...args: any[]) => any>(
     timer = setTimeout(() => cb(...args), wait)
   }
 }
+
+export const isRunning = (animation: Animation) =>
+  animation.playState === 'running'

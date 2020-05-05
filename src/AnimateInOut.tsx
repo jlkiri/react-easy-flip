@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { FlipContext } from './FlipProvider'
+import { isRunning } from './helpers'
 
 export { AnimateInOut }
 
@@ -35,6 +36,7 @@ interface AnimateInProps {
   children: React.ReactElement
   keyframes?: AnimateInOutProps['in']
   isInitialRender: boolean
+  isOld: boolean
 }
 
 interface AnimateOutProps {
@@ -79,14 +81,25 @@ const onlyValidElements = (children: React.ReactNode) => {
 }
 
 const AnimateIn: React.FC<AnimateInProps> = (props: AnimateInProps) => {
-  const countContext = React.useContext(ChildCountContext)
+  const { cachedAnimations } = React.useContext(FlipContext)
 
   const { children, isInitialRender } = props
   const flipId = children.props['data-flip-id']
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     if (!isInitialRender) {
-      const elm = document.querySelector(`[data-flip-id=${flipId}`)!
+      if (props.isOld) {
+        return
+      }
+
+      const assignedAnimation = cachedAnimations.current[flipId]
+      if (assignedAnimation && isRunning(assignedAnimation.animation)) {
+        return
+      }
+
+      const elm = document.querySelector(`[data-flip-id=${flipId}]`)
+
+      if (!elm) return
 
       const keyframes = props.keyframes || fadeIn
 
@@ -95,7 +108,7 @@ const AnimateIn: React.FC<AnimateInProps> = (props: AnimateInProps) => {
         fill: 'both'
       })
     }
-  }, [isInitialRender, flipId, props.keyframes])
+  }, [isInitialRender, flipId, props.keyframes, props.isOld, cachedAnimations])
 
   return props.children
 }
@@ -103,21 +116,23 @@ const AnimateIn: React.FC<AnimateInProps> = (props: AnimateInProps) => {
 const AnimateOut: React.FC<AnimateOutProps> = (props: AnimateOutProps) => {
   const ref = React.useRef<Element>(null)
   const cachedAnimation = React.useRef<Animation | null>(null)
+  const { cachedAnimations } = React.useContext(FlipContext)
 
   React.useLayoutEffect(() => {
     if (!ref.current) return
 
     const flipId = props.childProps['data-flip-id']
 
-    if (document.querySelector(`[data-flip-id=${flipId}`)) {
+    const currAnimation = cachedAnimation.current
+
+    if (currAnimation && isRunning(currAnimation)) {
       return
     }
 
-    const currAnimation = cachedAnimation.current
+    const assignedAnimation = cachedAnimations.current[flipId]
 
-    if (currAnimation && currAnimation.playState === 'running') {
-      //currAnimation.finish()
-      // props.callback()
+    if (assignedAnimation && isRunning(assignedAnimation.animation)) {
+      props.callback()
       return
     }
 
@@ -165,29 +180,23 @@ const AnimateInOut = ({
 
   const presentChildren = React.useRef(filteredChildren)
 
-  React.Children.forEach(filteredChildren, (child) => {
-    cache.set(getChildKey(child), child)
-  })
-
-  React.useLayoutEffect(() => {
-    exiting.forEach((key) => {
-      const flipId = cache.get(key)!.props[`data-flip-id`]
-
-      // Force finish animation when some next animation is triggered
-      if (document.querySelector(`[data-flip-id=${flipId}]`)) {
-        removeFromDOM(key)
-      }
+  React.useEffect(() => {
+    React.Children.forEach(filteredChildren, (child) => {
+      cache.set(getChildKey(child), child)
     })
   })
 
   if (initialRender.current) {
     initialRender.current = false
     return filteredChildren.map((child) => (
-      <ChildCountProvider key={getChildKey(child)}>
-        <AnimateIn keyframes={inKeyframes} isInitialRender>
-          {child}
-        </AnimateIn>
-      </ChildCountProvider>
+      <AnimateIn
+        key={getChildKey(child)}
+        keyframes={inKeyframes}
+        isOld={false}
+        isInitialRender
+      >
+        {child}
+      </AnimateIn>
     ))
   }
 
@@ -238,15 +247,14 @@ const AnimateInOut = ({
     renderedChildren.splice(
       index,
       0,
-      <ChildCountProvider key={key}>
-        <AnimateOut
-          keyframes={out}
-          callback={removeFromCache}
-          childProps={currProps}
-        >
-          {child}
-        </AnimateOut>
-      </ChildCountProvider>
+      <AnimateOut
+        key={key}
+        keyframes={out}
+        callback={removeFromCache}
+        childProps={currProps}
+      >
+        {child}
+      </AnimateOut>
     )
   })
 
@@ -256,9 +264,13 @@ const AnimateInOut = ({
     }
 
     return (
-      <ChildCountProvider key={getChildKey(child)}>
-        <AnimateIn isInitialRender={false}>{child}</AnimateIn>
-      </ChildCountProvider>
+      <AnimateIn
+        key={getChildKey(child)}
+        isInitialRender={false}
+        isOld={!!cache.get(getChildKey(child))}
+      >
+        {child}
+      </AnimateIn>
     )
   })
 

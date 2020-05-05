@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { FlipProvider, FlipContext } from './FlipProvider'
+import { isRunning } from './helpers'
 
 export { FlipProvider, FlipContext }
 
@@ -22,8 +23,6 @@ const empty = (obj: object) => Object.keys(obj).length === 0
 
 const getChildren = (rootElm: Element) =>
   rootElm.children as HTMLCollectionOf<FlipHtmlElement>
-
-const isRunning = (animation: Animation) => animation.playState === 'running'
 
 const getTranslateX = (cachedRect: DOMRect, nextRect: DOMRect) =>
   cachedRect.x - nextRect.x
@@ -99,8 +98,6 @@ export const useFlip = (rootId: string) => {
         )
         const scaleX = getScaleX(cachedRect, nextRect)
         const scaleY = getScaleY(cachedRect, nextRect)
-
-        console.log(translateY)
 
         if (translateX === 0 && translateY === 0) {
           continue

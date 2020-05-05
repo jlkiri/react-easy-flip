@@ -88,6 +88,8 @@ function TodoApp() {
 
   const todoItemsId = 'flip-todo-items'
 
+  console.log('render')
+
   useFlip(todoItemsId)
 
   return (
