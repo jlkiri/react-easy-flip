@@ -1,200 +1,15 @@
-import React, {
-  useState,
-  useLayoutEffect,
-  useRef,
-  useContext,
-  useReducer,
-  useCallback
-} from 'react'
+import React, { useState } from 'react'
 import { nanoid } from 'nanoid'
-import { useFlip, FlipContext, FlipProvider } from 'react-easy-flip'
+import {
+  useFlip,
+  FlipProvider,
+  AnimateInOut,
+  fadeOut,
+  fadeIn
+} from 'react-easy-flip'
 import './App.css'
 
 export { FlipProvider }
-
-const fadeOut = { from: { opacity: 1 }, to: { opacity: 0 } }
-
-/* const useLeaveAnimation = (animation: any) => {
-  const forceRender = useContext(FlipContext)
-  return {
-    forceRender,
-    animation
-  }
-} */
-
-interface AppearExitAnimatorProps {
-  children: React.ReactNode
-  /* onLeave: ReturnType<typeof useLeaveAnimation> */
-  animation: any
-}
-
-const getChildKey = (child: React.ReactElement) => {
-  return `${child.key}` || ''
-}
-
-const onlyElement = (children: React.ReactNode) => {
-  const filtered: React.ReactElement[] = []
-
-  React.Children.forEach(children, (child) => {
-    if (React.isValidElement(child)) {
-      filtered.push(child)
-    }
-  })
-
-  return filtered
-}
-
-const AnimateLeave = (props: any) => {
-  const ref = useRef<Element>()
-  const cachedAnimation = useRef<Animation>()
-
-  useLayoutEffect(() => {
-    if (!ref.current) return
-
-    if (
-      document.querySelector(
-        `[data-flip-id=${props.childProps['data-flip-id']}`
-      )
-    ) {
-      return
-    }
-
-    const currAnimation = cachedAnimation.current
-
-    if (currAnimation && currAnimation.playState === 'running') {
-      currAnimation.finish()
-      props.callback()
-      return
-    }
-
-    const animation = ref.current.animate(
-      [props.animation.from, props.animation.to],
-      {
-        duration: 1000,
-        fill: 'both'
-      }
-    )
-
-    animation.onfinish = () => {
-      props.callback()
-    }
-
-    cachedAnimation.current = animation
-  })
-
-  return (
-    <React.Fragment>
-      {React.cloneElement(props.children, {
-        ...props.childProps,
-        'data-flip-id': undefined,
-        ref
-      })}
-    </React.Fragment>
-  )
-}
-
-export const AnimateInOut = ({
-  children,
-  animation
-}: AppearExitAnimatorProps): any => {
-  const cache = React.useRef(new Map<string, React.ReactElement>()).current
-  const exiting = React.useRef(new Set<string>()).current
-  const forceRender = useContext(FlipContext)
-
-  const filteredChildren = onlyElement(children)
-
-  const presentChildren = React.useRef(filteredChildren)
-
-  React.Children.forEach(filteredChildren, (child) => {
-    if (cache.get(getChildKey(child))) return
-
-    cache.set(getChildKey(child), child)
-  })
-
-  const presentKeys = presentChildren.current.map(getChildKey)
-  const targetKeys = filteredChildren.map(getChildKey)
-
-  useLayoutEffect(() => {
-    exiting.forEach((key) => {
-      if (
-        document.querySelector(
-          `[data-flip-id=${cache.get(key)!.props[`data-flip-id`]}]`
-        )
-      ) {
-        exiting.delete(key)
-
-        const removeIndex = presentChildren.current.findIndex(
-          (child) => child.key === key
-        )
-
-        presentChildren.current.splice(removeIndex, 1)
-
-        if (exiting.size === 0) {
-          presentChildren.current = filteredChildren
-          forceRender()
-        }
-      }
-    })
-  })
-
-  for (const key of presentKeys) {
-    if (!targetKeys.includes(key)) {
-      if (cache.get(key)) {
-        exiting.add(key)
-      }
-    } else {
-      // In case this key has re-entered, remove from the exiting list
-      exiting.delete(key)
-    }
-  }
-
-  let renderedChildren = [...filteredChildren]
-
-  exiting.forEach((key) => {
-    // If this component is actually entering again, early return
-    if (targetKeys.indexOf(key) !== -1) return
-
-    const child = cache.get(key)
-
-    if (!child) return
-
-    const removeFromCache = () => {
-      // cache.delete(key)
-      exiting.delete(key)
-
-      const removeIndex = presentChildren.current.findIndex(
-        (child) => child.key === key
-      )
-
-      presentChildren.current.splice(removeIndex, 1)
-
-      if (exiting.size === 0) {
-        presentChildren.current = filteredChildren
-        forceRender()
-      }
-    }
-
-    const index = presentKeys.indexOf(key)
-    const currProps = child.props
-
-    renderedChildren.splice(
-      index,
-      0,
-      <AnimateLeave
-        key={key}
-        animation={animation}
-        callback={removeFromCache}
-        childProps={currProps}
-      >
-        {child}
-      </AnimateLeave>
-    )
-  })
-
-  presentChildren.current = renderedChildren
-
-  return renderedChildren
-}
 
 const shuffle = function shuffle(array: any[]) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -280,7 +95,7 @@ function TodoApp() {
       <div className="named-list">
         <h2>TODO</h2>
         <ul data-flip-root-id={todoItemsId} className="list">
-          <AnimateInOut animation={fadeOut}>
+          <AnimateInOut in={fadeIn} out={fadeOut}>
             {todoItems
               .filter((i) => !i.done)
               .map((item, _) => (
@@ -321,7 +136,7 @@ function TodoApp() {
       <div className="named-list">
         <h2>DONE</h2>
         <ul data-flip-root-id={todoItemsId} className="list">
-          <AnimateInOut animation={fadeOut}>
+          <AnimateInOut in={fadeIn} out={fadeOut}>
             {todoItems
               .filter((i) => i.done)
               .map((item, _) => (
