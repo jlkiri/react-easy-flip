@@ -83,16 +83,6 @@ function ShuffleApp() {
   )
 }
 
-declare module 'react' {
-  interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
-    // extends React's HTMLAttributes
-    out?: {
-      where: any
-      is: (v: any) => boolean
-    }
-  }
-}
-
 function TodoApp() {
   const [todoItems, setTodoItems] = useState(_items2)
 
