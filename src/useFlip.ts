@@ -112,7 +112,9 @@ export const useFlip = (rootId: string) => {
           'background-color'
         )
 
-        cachedPositions.current[flipId].styles.bgColor = nextColor
+        const prevColor = styles.bgColor
+
+        styles.bgColor = nextColor
 
         if (
           translateX === 0 &&
@@ -128,11 +130,11 @@ export const useFlip = (rootId: string) => {
           [
             {
               transform: `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`,
-              backgroundColor: styles.bgColor
+              background: prevColor
             },
             {
               transform: `translate(0px, 0px) scale(1,1)`,
-              backgroundColor: nextColor
+              background: nextColor
             }
           ],
           {
