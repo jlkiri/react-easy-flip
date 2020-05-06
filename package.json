@@ -7,7 +7,7 @@
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "scripts": {
-    "build": "microbundle -f es,cjs --no-sourcemap --tsconfig tsconfig.json",
+    "build": "microbundle -f es,cjs --tsconfig tsconfig.json",
     "prepare": "yarn build",
     "format": "prettier --write src/**.ts src/*.ts demo/**/*.{ts,tsx}",
     "lint": "eslint src/",

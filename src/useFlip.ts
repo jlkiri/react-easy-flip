@@ -99,19 +99,29 @@ export const useFlip = (rootId: string) => {
         const scaleX = getScaleX(cachedRect, nextRect)
         const scaleY = getScaleY(cachedRect, nextRect)
 
-        if (translateX === 0 && translateY === 0) {
-          continue
-        }
-
         cachedPositions.current[flipId].rect = nextRect
 
-        cachedAnimations.current[flipId] = cachedAnimations.current[flipId] || {
-          animation: null
+        const assignedAnimation = cachedAnimations.current[flipId]
+
+        cachedAnimations.current[flipId] = assignedAnimation || {
+          animation: null,
+          override: false
         }
 
         const nextColor = getComputedStyle(flipElement).getPropertyValue(
           'background-color'
         )
+
+        cachedPositions.current[flipId].styles.bgColor = nextColor
+
+        if (
+          translateX === 0 &&
+          translateY === 0 &&
+          scaleX === 1 &&
+          scaleY === 1
+        ) {
+          continue
+        }
 
         const effect = new KeyframeEffect(
           flipElement,
@@ -132,11 +142,9 @@ export const useFlip = (rootId: string) => {
           }
         )
 
-        cachedPositions.current[flipId].styles.bgColor = nextColor
-
         const animation = new Animation(effect, document.timeline)
 
-        cachedAnimations.current[flipId].animation = animation
+        cachedAnimations.current[flipId] = { animation }
 
         animation.play()
       }

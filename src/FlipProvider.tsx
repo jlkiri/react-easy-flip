@@ -1,9 +1,9 @@
 import * as React from 'react'
 
-type Time = number
-
 interface Animations {
-  [id: string]: { animation: Animation }
+  [id: string]: {
+    animation: Animation
+  }
 }
 
 interface FlipContext {
@@ -22,7 +22,9 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
 
   const ctx = React.useMemo(() => {
     return {
-      forceRender: () => setForcedRenders(forcedRenders + 1),
+      forceRender: () => {
+        setForcedRenders(forcedRenders + 1)
+      },
       cachedAnimations
     }
   }, [forcedRenders])

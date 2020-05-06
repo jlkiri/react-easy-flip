@@ -83,12 +83,20 @@ function ShuffleApp() {
   )
 }
 
+declare module 'react' {
+  interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
+    // extends React's HTMLAttributes
+    out?: {
+      where: any
+      is: (v: any) => boolean
+    }
+  }
+}
+
 function TodoApp() {
   const [todoItems, setTodoItems] = useState(_items2)
 
   const todoItemsId = 'flip-todo-items'
-
-  console.log('render')
 
   useFlip(todoItemsId)
 
@@ -97,7 +105,7 @@ function TodoApp() {
       <div className="named-list">
         <h2>TODO</h2>
         <ul data-flip-root-id={todoItemsId} className="list">
-          <AnimateInOut in={fadeIn} out={fadeOut}>
+          <AnimateInOut itemAmount={todoItems.length}>
             {todoItems
               .filter((i) => !i.done)
               .map((item, _) => (
@@ -138,7 +146,7 @@ function TodoApp() {
       <div className="named-list">
         <h2>DONE</h2>
         <ul data-flip-root-id={todoItemsId} className="list">
-          <AnimateInOut in={fadeIn} out={fadeOut}>
+          <AnimateInOut itemAmount={todoItems.length}>
             {todoItems
               .filter((i) => i.done)
               .map((item, _) => (
