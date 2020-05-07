@@ -14,6 +14,7 @@ interface AnimationKeyframes {
   from: CustomKeyframe
   to: CustomKeyframe
   duration: number
+  easing?: string
 }
 
 interface AnimateInOutProps {
@@ -74,6 +75,7 @@ const InOutChild = (props: InOutChildProps) => {
         [keyframes.from, keyframes.to],
         {
           duration: keyframes.duration,
+          easing: keyframes.easing || 'ease',
           fill: 'both'
         }
       )
