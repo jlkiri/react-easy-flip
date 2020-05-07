@@ -190,4 +190,4 @@ function TodoApp() {
   )
 }
 
-export default ShuffleApp
+export default TodoApp

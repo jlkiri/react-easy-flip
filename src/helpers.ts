@@ -17,6 +17,8 @@ export const isRunning = (animation: Animation) =>
 export const not = (bool: boolean) => !bool
 export const empty = (obj: object) => Object.keys(obj).length === 0
 
+export const getRect = (element: Element) => element.getBoundingClientRect()
+
 export const getComputedBgColor = (element: Element) =>
   getComputedStyle(element).getPropertyValue('background-color')
 

@@ -10,7 +10,8 @@ import {
   getTranslateY,
   getTranslateX,
   getScaleX,
-  getScaleY
+  getScaleY,
+  getRect
 } from './helpers'
 import { DEFAULT_DURATION, DEFAULT_DELAY, DEFAULT_EASING } from './const'
 
@@ -58,7 +59,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
       const cachedAnimation = cachedAnimations.current[flipId]
 
       if (cachedAnimation && isRunning(cachedAnimation)) {
-        cachedPositions.current[flipId].rect = element.getBoundingClientRect()
+        cachedPositions.current[flipId].rect = getRect(element)
         cachedAnimation.finish()
       }
     }
@@ -78,7 +79,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
           styles: {
             bgColor: getComputedBgColor(element)
           },
-          rect: element.getBoundingClientRect()
+          rect: getRect(element)
         }
       }
     }
@@ -90,17 +91,15 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
       return
     }
 
-    const positions = Object.entries(cachedPositions.current)
-
-    for (const [i, entry] of positions.entries()) {
-      const [flipId, { rect: cachedRect, styles }] = entry
-
+    for (const [flipId, { rect: cachedRect, styles }] of Object.entries(
+      cachedPositions.current
+    )) {
       // Select by data-flip-id which makes it possible to animate the element
       // that re-mounted in some other DOM location (i.e. shared layout transition)
       const flipElement = getElementByFlipId(flipId)
 
       if (flipElement) {
-        const nextRect = flipElement.getBoundingClientRect()
+        const nextRect = getRect(flipElement)
 
         const translateY = getTranslateY(
           cachedRect as DOMRect,
