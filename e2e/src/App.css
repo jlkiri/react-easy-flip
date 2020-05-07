@@ -16,6 +16,7 @@ li {
   min-width: 250px;
   margin-bottom: 10px;
   border-radius: 10px;
+  font-size: 18px;
   user-select: none;
   background-color: rgb(105, 98, 106);
 }
@@ -27,7 +28,7 @@ li button {
   border-radius: 50%;
   padding: 5px;
   appearance: none;
-  border: 3px dotted rgb(255, 209, 215);
+  border: 2px dotted rgb(255, 209, 215);
   cursor: pointer;
   background: none;
 }

@@ -1,73 +1,82 @@
 import * as React from 'react'
 import { FlipProvider, FlipContext } from './FlipProvider'
-import { isRunning } from './helpers'
+import {
+  isRunning,
+  getElementByFlipId,
+  empty,
+  not,
+  getElementsByRootId,
+  getComputedBgColor,
+  getTranslateY,
+  getTranslateX,
+  getScaleX,
+  getScaleY
+} from './helpers'
+import { DEFAULT_DURATION, DEFAULT_DELAY, DEFAULT_EASING } from './const'
 
 export { FlipProvider, FlipContext }
 
-type FlipID = string
-type Rect = DOMRect | ClientRect
+export type FlipID = string
+export type Rect = DOMRect | ClientRect
 
-interface CachedStyles {
+export interface CachedStyles {
   [id: string]: { styles: any; rect: Rect }
 }
 
-interface FlipHtmlElement extends Element {
+export interface AnimationOptions {
+  duration?: number
+  easing?: string
+  delay?: number
+}
+
+export interface FlipHtmlElement extends Element {
   dataset: {
     flipId: FlipID
-    onlyColor: boolean
   }
 }
 
-const not = (bool: boolean) => !bool
-const empty = (obj: object) => Object.keys(obj).length === 0
-
-const getChildren = (rootElm: Element) =>
-  rootElm.children as HTMLCollectionOf<FlipHtmlElement>
-
-const getTranslateX = (cachedRect: DOMRect, nextRect: DOMRect) =>
-  cachedRect.x - nextRect.x
-
-const getTranslateY = (cachedRect: DOMRect, nextRect: DOMRect) =>
-  cachedRect.y - nextRect.y
-
-const getScaleX = (
-  cachedRect: DOMRect | ClientRect,
-  nextRect: DOMRect | ClientRect
-) => cachedRect.width / Math.max(nextRect.width, 0.001)
-
-const getScaleY = (
-  cachedRect: DOMRect | ClientRect,
-  nextRect: DOMRect | ClientRect
-) => cachedRect.height / Math.max(nextRect.height, 0.001)
-
-export const useFlip = (rootId: string) => {
+export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
   const cachedPositions = React.useRef<CachedStyles>(Object.create(null))
   const { cachedAnimations } = React.useContext(FlipContext)
 
-  for (const [flipId] of Object.entries(cachedPositions.current)) {
-    const element = document.querySelector(`[data-flip-id=${flipId}]`)
+  const { delay, duration, easing } = {
+    duration: DEFAULT_DURATION,
+    easing: DEFAULT_EASING,
+    delay: DEFAULT_DELAY,
+    ...options
+  }
+
+  const positionEntries = Object.entries(cachedPositions.current)
+
+  // If render happened during animation, do not wait for useLayoutEffect
+  // and finish all animations, but cache their midflight position for next animation.
+  // getBoundingClientRect will return correct values only here and not in useLayoutEffect!
+  for (const [flipId] of positionEntries) {
+    const element = getElementByFlipId(flipId)
 
     if (not(empty(cachedAnimations)) && element) {
-      const cache = cachedAnimations.current[flipId]
+      const cachedAnimation = cachedAnimations.current[flipId]
 
-      if (cache && cache.animation && isRunning(cache.animation)) {
+      if (cachedAnimation && isRunning(cachedAnimation)) {
         cachedPositions.current[flipId].rect = element.getBoundingClientRect()
-        cache.animation.finish()
+        cachedAnimation.finish()
       }
     }
   }
 
   React.useEffect(() => {
-    const roots = document.querySelectorAll(`[data-flip-root-id=${rootId}]`)!
+    // Cache element positions on initial render for subsequent calculations
+    const roots = getElementsByRootId(rootId)
+
     for (const root of roots) {
+      // Select all root children that are supposed to be animated
       const flippableElements = root.querySelectorAll(`[data-flip-id]`)
+
       for (const element of flippableElements) {
         const { flipId } = (element as FlipHtmlElement).dataset
         cachedPositions.current[flipId] = {
           styles: {
-            bgColor: getComputedStyle(element).getPropertyValue(
-              'background-color'
-            )
+            bgColor: getComputedBgColor(element)
           },
           rect: element.getBoundingClientRect()
         }
@@ -76,14 +85,19 @@ export const useFlip = (rootId: string) => {
   }, [rootId])
 
   React.useLayoutEffect(() => {
+    // Do not do anything on initial render
     if (empty(cachedPositions.current)) {
       return
     }
 
-    for (const [flipId, { rect: cachedRect, styles }] of Object.entries(
-      cachedPositions.current
-    )) {
-      const flipElement = document.querySelector(`[data-flip-id=${flipId}]`)
+    const positions = Object.entries(cachedPositions.current)
+
+    for (const [i, entry] of positions.entries()) {
+      const [flipId, { rect: cachedRect, styles }] = entry
+
+      // Select by data-flip-id which makes it possible to animate the element
+      // that re-mounted in some other DOM location (i.e. shared layout transition)
+      const flipElement = getElementByFlipId(flipId)
 
       if (flipElement) {
         const nextRect = flipElement.getBoundingClientRect()
@@ -99,23 +113,16 @@ export const useFlip = (rootId: string) => {
         const scaleX = getScaleX(cachedRect, nextRect)
         const scaleY = getScaleY(cachedRect, nextRect)
 
+        // Update the cached position
         cachedPositions.current[flipId].rect = nextRect
 
-        const assignedAnimation = cachedAnimations.current[flipId]
+        const nextColor = getComputedBgColor(flipElement)
 
-        cachedAnimations.current[flipId] = assignedAnimation || {
-          animation: null,
-          override: false
-        }
-
-        const nextColor = getComputedStyle(flipElement).getPropertyValue(
-          'background-color'
-        )
-
+        // Cache the color value
         const prevColor = styles.bgColor
-
         styles.bgColor = nextColor
 
+        // Do not animate if there is no need to
         if (
           translateX === 0 &&
           translateY === 0 &&
@@ -138,15 +145,16 @@ export const useFlip = (rootId: string) => {
             }
           ],
           {
-            duration: 500,
-            fill: 'both',
-            easing: 'ease-in-out'
+            duration,
+            easing,
+            delay,
+            fill: 'both'
           }
         )
 
         const animation = new Animation(effect, document.timeline)
 
-        cachedAnimations.current[flipId] = { animation }
+        cachedAnimations.current[flipId] = animation
 
         animation.play()
       }

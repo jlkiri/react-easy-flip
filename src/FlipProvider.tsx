@@ -1,9 +1,7 @@
 import * as React from 'react'
 
 interface Animations {
-  [id: string]: {
-    animation: Animation
-  }
+  [flipId: string]: Animation
 }
 
 interface FlipContext {

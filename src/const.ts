@@ -1,6 +1,3 @@
-export const DEFAULT_OPTIONS = {
-  duration: 700,
-  delay: 0,
-  easing: 'ease',
-  transformOrigin: 'top left'
-}
+export const DEFAULT_DURATION = 400
+export const DEFAULT_DELAY = 0
+export const DEFAULT_EASING = 'ease-out'

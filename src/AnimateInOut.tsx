@@ -170,6 +170,7 @@ const AnimateInOut = React.memo(function AnimateOut({
   const targetKeys = filteredChildren.map(getChildKey)
 
   const removeFromDOM = (key: string) => {
+    // Avoid bugs when callback is called twice (i.e. not exiting anymore)
     if (!exiting.has(key)) return
 
     exiting.delete(key)
