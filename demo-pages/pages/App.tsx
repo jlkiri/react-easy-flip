@@ -69,8 +69,7 @@ function ShuffleApp() {
   const todoItemsId = 'flip-todo-items'
 
   useFlip(todoItemsId, {
-    duration: 500,
-    stagger: 100
+    duration: 500
   })
 
   return (
@@ -101,8 +100,7 @@ function TodoApp() {
   const todoItemsId = 'flip-todo-items'
 
   const { pause, resume } = useFlip(todoItemsId, {
-    duration: 500,
-    stagger: 300
+    duration: 500
   })
 
   return (

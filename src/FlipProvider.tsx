@@ -29,18 +29,18 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
         setForcedRenders(forcedRenders + 1)
       },
       pauseAll: () => {
-        /* for (const animation of Object.values(cachedAnimations.current)) {
+        for (const animation of Object.values(cachedAnimations.current)) {
           if (isRunning(animation)) {
             animation.pause()
           }
-        } */
+        }
       },
       resumeAll: () => {
-        /* for (const animation of Object.values(cachedAnimations.current)) {
+        for (const animation of Object.values(cachedAnimations.current)) {
           if (isPaused(animation)) {
             animation.play()
           }
-        } */
+        }
       },
       cachedAnimations
     }

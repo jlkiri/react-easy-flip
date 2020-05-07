@@ -44,8 +44,6 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
     FlipContext
   )
 
-  console.log(cachedAnimations)
-
   const {
     delay = DEFAULT_DELAY,
     duration = DEFAULT_DURATION,
@@ -157,7 +155,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
 
         const animation = new Animation(effect, document.timeline)
 
-        // cachedAnimations.current[flipId] = animation
+        cachedAnimations.current[flipId] = animation
 
         animation.play()
       }
