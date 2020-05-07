@@ -1,35 +1,25 @@
 import * as React from 'react'
 import { FlipContext } from './FlipProvider'
 import { isRunning } from './helpers'
+import { fadeIn, fadeOut } from './keyframes'
 
+export { fadeIn, fadeOut }
 export { AnimateInOut }
 
-export const fadeOut = {
-  from: { opacity: 1 },
-  to: { opacity: 0 },
-  duration: 500
+interface CustomKeyframe {
+  [property: string]: string | number
 }
 
-export const fadeIn = {
-  from: { opacity: 0 },
-  to: { opacity: 1 },
-  duration: 500
-}
-
-interface AnimationKeyframe {
-  from: {
-    [prop: string]: string | number
-  }
-  to: {
-    [prop: string]: string | number
-  }
+interface AnimationKeyframes {
+  from: CustomKeyframe
+  to: CustomKeyframe
   duration: number
 }
 
 interface AnimateInOutProps {
   children: React.ReactNode
-  in?: AnimationKeyframe
-  out?: AnimationKeyframe
+  in?: AnimationKeyframes
+  out?: AnimationKeyframes
   itemAmount?: number
 }
 
@@ -37,7 +27,7 @@ interface InOutChildProps {
   children: React.ReactElement
   childProps: React.ReactElement['props']
   callback?: () => void
-  keyframes?: AnimationKeyframe
+  keyframes?: AnimationKeyframes
   isInitialRender: boolean
   hasRendered: boolean
   isExiting: boolean
@@ -67,11 +57,13 @@ const InOutChild = (props: InOutChildProps) => {
     if (!ref.current) return
 
     if (!props.isInitialRender) {
+      // Skip animations on non-relevant renders (neither exiting nor appearing)
       if (!props.isExiting && props.hasRendered) return
 
-      const currAnimation = localCachedAnimation.current
+      const cachedAnimation = localCachedAnimation.current
 
-      if (currAnimation && isRunning(currAnimation)) {
+      // If currently playing exiting animation keep playing
+      if (cachedAnimation && isRunning(cachedAnimation)) {
         return
       }
 
@@ -89,9 +81,7 @@ const InOutChild = (props: InOutChildProps) => {
       const animation = new Animation(kfe, document.timeline)
 
       if (props.isExiting) {
-        animation.onfinish = () => {
-          props.callback && props.callback()
-        }
+        animation.onfinish = () => props.callback && props.callback()
       }
 
       animation.play()
@@ -100,7 +90,7 @@ const InOutChild = (props: InOutChildProps) => {
     }
   }, [props])
 
-  // Prevent interactions since the element is treated as non-existent
+  // Prevent interactions with exiting elements (treat as non-existent)
   const style = { ...(props.children.props.style || {}), pointerEvents: 'none' }
 
   return (
@@ -109,7 +99,7 @@ const InOutChild = (props: InOutChildProps) => {
         ? React.cloneElement(props.children, {
             ...props.children.props,
             style,
-            'data-flip-id': undefined, // Prevent shared animations
+            'data-flip-id': undefined, // Prevent trigger of shared layout animations
             ref
           })
         : props.children}
@@ -120,19 +110,20 @@ const InOutChild = (props: InOutChildProps) => {
 const AnimateInOut = React.memo(function AnimateOut({
   children,
   in: inKeyframes,
-  out,
+  out: outKeyframes,
   itemAmount
 }: AnimateInOutProps): any {
   const cache = React.useRef(new Map<string, React.ReactElement>()).current
   const exiting = React.useRef(new Set<string>()).current
   const previousAmount = React.useRef(itemAmount)
   const initialRender = React.useRef(true)
+  const { forceRender } = React.useContext(FlipContext)
 
+  // Use an optional explicit hint to know when an element truly is removed
+  // and not moved to other position in DOM (shared layout transition)
   const amountChanged = itemAmount !== previousAmount.current
 
   previousAmount.current = itemAmount
-
-  const { forceRender } = React.useContext(FlipContext)
 
   const filteredChildren = onlyValidElements(children)
 
@@ -144,6 +135,7 @@ const AnimateInOut = React.memo(function AnimateOut({
     })
   })
 
+  // On initial render just wrap everything with InOutChild
   if (initialRender.current) {
     initialRender.current = false
     return filteredChildren.map((child) => (
@@ -160,6 +152,8 @@ const AnimateInOut = React.memo(function AnimateOut({
     ))
   }
 
+  // If render is caused by shared layout animation do not play exit animations
+  // but keep those already playing
   if (!amountChanged) {
     if (exiting.size !== 0) {
       return presentChildren.current
@@ -178,12 +172,14 @@ const AnimateInOut = React.memo(function AnimateOut({
 
     exiting.delete(key)
 
+    // Do not force render if multiple exit animations are playing
     const removeIndex = presentChildren.current.findIndex(
       (child) => child.key === key
     )
 
     presentChildren.current.splice(removeIndex, 1)
 
+    // Only force render when the last exit animation is finished
     if (exiting.size === 0) {
       presentChildren.current = filteredChildren
       forceRender()
@@ -202,16 +198,16 @@ const AnimateInOut = React.memo(function AnimateOut({
   let renderedChildren = [...filteredChildren]
 
   exiting.forEach((key) => {
-    // If this component is actually entering again, early return
+    // If this component is actually entering again, early return.
+    // Copied from framer-motion. Not sure what the usecase is but just in case.
     if (targetKeys.indexOf(key) !== -1) return
 
     const child = cache.get(key)
 
     if (!child) return
 
-    const removeFromCache = () => {
-      removeFromDOM(key)
-    }
+    // This is an animation onfinish callback
+    const removeFromCache = () => removeFromDOM(key)
 
     const index = presentKeys.indexOf(key)
 
@@ -224,7 +220,7 @@ const AnimateInOut = React.memo(function AnimateOut({
         hasRendered
         childProps={child.props}
         key={key}
-        keyframes={out}
+        keyframes={outKeyframes}
         callback={removeFromCache}
       >
         {child}
@@ -232,6 +228,7 @@ const AnimateInOut = React.memo(function AnimateOut({
     )
   })
 
+  // Wrap children in InOutChild except those that are exiting
   renderedChildren = renderedChildren.map((child) => {
     if (exiting.has(getChildKey(child))) {
       return child
