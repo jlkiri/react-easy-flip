@@ -61,12 +61,12 @@ const InOutChild = (props: InOutChildProps) => {
       // Skip animations on non-relevant renders (neither exiting nor appearing)
       if (!props.isExiting && props.hasRendered) return
 
-      const cachedAnimation = localCachedAnimation.current
+      /* const cachedAnimation = localCachedAnimation.current
 
       // If currently playing exiting animation keep playing
       if (cachedAnimation && isRunning(cachedAnimation)) {
         return
-      }
+      } */
 
       const keyframes = props.keyframes || (props.isExiting ? fadeOut : fadeIn)
 

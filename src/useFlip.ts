@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useLayoutEffect } from './useLayoutEffect'
 import { FlipProvider, FlipContext } from './FlipProvider'
 import {
   isRunning,
@@ -43,6 +44,8 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
     FlipContext
   )
 
+  console.log(cachedAnimations)
+
   const {
     delay = DEFAULT_DELAY,
     duration = DEFAULT_DURATION,
@@ -86,7 +89,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
     }
   }, [rootId])
 
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     // Do not do anything on initial render
     if (empty(cachedPositions.current)) {
       return
@@ -154,7 +157,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
 
         const animation = new Animation(effect, document.timeline)
 
-        cachedAnimations.current[flipId] = animation
+        // cachedAnimations.current[flipId] = animation
 
         animation.play()
       }
