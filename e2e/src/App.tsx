@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { nanoid } from 'nanoid'
 import {
   useFlip,
@@ -72,7 +72,10 @@ function ShuffleApp() {
 
   const todoItemsId = 'flip-todo-items'
 
-  useFlip(todoItemsId)
+  useFlip(todoItemsId, {
+    duration: 500,
+    stagger: 100
+  })
 
   return (
     <div>
@@ -97,13 +100,30 @@ function ShuffleApp() {
 
 function TodoApp() {
   const [todoItems, setTodoItems] = useState(_items2)
+  const isPaused = useRef(false)
 
   const todoItemsId = 'flip-todo-items'
 
-  useFlip(todoItemsId)
+  const { pause, resume } = useFlip(todoItemsId, {
+    duration: 500,
+    stagger: 300
+  })
 
   return (
     <div className="container">
+      <button
+        onClick={() => {
+          if (isPaused.current) {
+            resume()
+            isPaused.current = false
+            return
+          }
+          pause()
+          isPaused.current = true
+        }}
+      >
+        Pause
+      </button>
       <div className="named-list">
         <h2>TODO</h2>
         <ul data-flip-root-id={todoItemsId} className="list">

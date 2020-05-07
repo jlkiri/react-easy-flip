@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { isPaused, isRunning } from './helpers'
 
 interface Animations {
   [flipId: string]: Animation
@@ -6,11 +7,15 @@ interface Animations {
 
 interface FlipContext {
   forceRender: () => void
+  pauseAll: () => void
+  resumeAll: () => void
   cachedAnimations: React.MutableRefObject<Animations>
 }
 
 export const FlipContext = React.createContext<FlipContext>({
   forceRender: () => {},
+  pauseAll: () => {},
+  resumeAll: () => {},
   cachedAnimations: Object.create(null)
 })
 
@@ -22,6 +27,20 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
     return {
       forceRender: () => {
         setForcedRenders(forcedRenders + 1)
+      },
+      pauseAll: () => {
+        for (const animation of Object.values(cachedAnimations.current)) {
+          if (isRunning(animation)) {
+            animation.pause()
+          }
+        }
+      },
+      resumeAll: () => {
+        for (const animation of Object.values(cachedAnimations.current)) {
+          if (isPaused(animation)) {
+            animation.play()
+          }
+        }
       },
       cachedAnimations
     }

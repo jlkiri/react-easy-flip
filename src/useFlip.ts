@@ -28,6 +28,7 @@ export interface AnimationOptions {
   duration?: number
   easing?: string
   delay?: number
+  stagger?: number
 }
 
 export interface FlipHtmlElement extends Element {
@@ -38,14 +39,16 @@ export interface FlipHtmlElement extends Element {
 
 export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
   const cachedPositions = React.useRef<CachedStyles>(Object.create(null))
-  const { cachedAnimations } = React.useContext(FlipContext)
+  const { cachedAnimations, pauseAll, resumeAll } = React.useContext(
+    FlipContext
+  )
 
-  const { delay, duration, easing } = {
-    duration: DEFAULT_DURATION,
-    easing: DEFAULT_EASING,
-    delay: DEFAULT_DELAY,
-    ...options
-  }
+  const {
+    delay = DEFAULT_DELAY,
+    duration = DEFAULT_DURATION,
+    easing = DEFAULT_EASING,
+    stagger = 0
+  } = options
 
   const positionEntries = Object.entries(cachedPositions.current)
 
@@ -67,9 +70,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
 
   React.useEffect(() => {
     // Cache element positions on initial render for subsequent calculations
-    const roots = getElementsByRootId(rootId)
-
-    for (const root of roots) {
+    for (const root of getElementsByRootId(rootId)) {
       // Select all root children that are supposed to be animated
       const flippableElements = root.querySelectorAll(`[data-flip-id]`)
 
@@ -91,9 +92,9 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
       return
     }
 
-    for (const [flipId, { rect: cachedRect, styles }] of Object.entries(
-      cachedPositions.current
-    )) {
+    Object.entries(cachedPositions.current).forEach((entry, i) => {
+      const [flipId, { rect: cachedRect, styles }] = entry
+
       // Select by data-flip-id which makes it possible to animate the element
       // that re-mounted in some other DOM location (i.e. shared layout transition)
       const flipElement = getElementByFlipId(flipId)
@@ -128,7 +129,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
           scaleX === 1 &&
           scaleY === 1
         ) {
-          continue
+          return
         }
 
         const effect = new KeyframeEffect(
@@ -146,7 +147,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
           {
             duration,
             easing,
-            delay,
+            delay: delay + stagger * i,
             fill: 'both'
           }
         )
@@ -157,6 +158,8 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
 
         animation.play()
       }
-    }
+    })
   })
+
+  return { pause: pauseAll, resume: resumeAll }
 }

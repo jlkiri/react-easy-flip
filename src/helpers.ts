@@ -14,6 +14,9 @@ export function debounce<F extends (...args: any[]) => any>(
 export const isRunning = (animation: Animation) =>
   animation.playState === 'running'
 
+export const isPaused = (animation: Animation) =>
+  animation.playState === 'paused'
+
 export const not = (bool: boolean) => !bool
 export const empty = (obj: object) => Object.keys(obj).length === 0
 
