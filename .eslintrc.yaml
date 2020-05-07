@@ -20,7 +20,8 @@ rules:
   prettier/prettier: error
   react-hooks/rules-of-hooks: error
   react-hooks/exhaustive-deps: warn
-  'react/prop-types': [2, { ignore: ['children'] }]
+  react/prop-types: [2, { ignore: ['children'] }]
+  react/react-in-jsx-scope: off
 settings:
   react:
     version: detect

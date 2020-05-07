@@ -1,0 +1,68 @@
+h2 {
+  text-align: center;
+}
+
+input {
+  position: absolute;
+  right: 0;
+  margin-right: 7px;
+}
+
+li {
+  color: white;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 250px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  font-size: 18px;
+  user-select: none;
+  background-color: rgb(105, 98, 106);
+}
+
+li button {
+  width: 35px;
+  height: 35px;
+  margin-left: 5px;
+  border-radius: 50%;
+  padding: 5px;
+  appearance: none;
+  border: 2px dotted rgb(255, 209, 215);
+  cursor: pointer;
+  background: none;
+}
+
+li button:hover {
+  background-color: rgb(238, 5, 114);
+  border: none;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding: 14px;
+  border-radius: 10px;
+  will-change: transform;
+  cursor: pointer;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+}
+
+.named-list {
+  padding: 30px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.list-item {
+  list-style: none;
+}
