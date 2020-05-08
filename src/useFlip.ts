@@ -15,6 +15,7 @@ import {
   getRect
 } from './helpers'
 import { DEFAULT_DURATION, DEFAULT_DELAY, DEFAULT_EASING } from './const'
+import { createKeyframes } from './createKeyframes'
 
 export { FlipProvider, FlipContext }
 
@@ -35,6 +36,7 @@ export interface AnimationOptions {
 export interface FlipHtmlElement extends Element {
   dataset: {
     flipId: FlipID
+    preserveScale: boolean
   }
 }
 
@@ -101,6 +103,12 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
       const flipElement = getElementByFlipId(flipId)
 
       if (flipElement) {
+        const scaleAdjustedElms = flipElement.querySelectorAll(
+          '[data-preserve-scale=true]'
+        )
+
+        const hasScaleAdjustedChildren = scaleAdjustedElms.length > 0
+
         const nextRect = getRect(flipElement)
 
         const translateY = getTranslateY(
@@ -133,25 +141,55 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
           return
         }
 
-        const effect = new KeyframeEffect(
-          flipElement,
-          [
-            {
-              transform: `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`,
-              background: prevColor
-            },
-            {
-              transform: `translate(0px, 0px) scale(1,1)`,
-              background: nextColor
-            }
-          ],
+        console.log(hasScaleAdjustedChildren)
+
+        const kfs = createKeyframes({
+          sx: scaleX,
+          sy: scaleY,
+          dx: translateX,
+          dy: translateY,
+          calculateInverse: hasScaleAdjustedChildren
+        })
+
+        const [firstKf, lastKf] = [
           {
-            duration,
-            easing,
-            delay: delay + stagger * i,
-            fill: 'both'
+            background: prevColor
+          },
+          {
+            background: nextColor
           }
-        )
+        ]
+
+        kfs.animations[0] = {
+          ...kfs.animations[0],
+          ...firstKf
+        }
+
+        kfs.animations[100] = {
+          ...kfs.animations[100],
+          ...lastKf
+        }
+
+        if (hasScaleAdjustedChildren) {
+          for (const elm of scaleAdjustedElms) {
+            const effect = new KeyframeEffect(elm, kfs.inverseAnimations, {
+              duration,
+              easing: 'linear',
+              delay: delay + stagger * i,
+              fill: 'both'
+            })
+
+            const animation = new Animation(effect, document.timeline)
+            animation.play()
+          }
+        }
+
+        const effect = new KeyframeEffect(flipElement, kfs.animations, {
+          duration,
+          easing: 'linear',
+          delay: delay + stagger * i,
+          fill: 'both'
+        })
 
         const animation = new Animation(effect, document.timeline)
 
