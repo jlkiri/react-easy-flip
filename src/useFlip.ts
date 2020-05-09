@@ -150,7 +150,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
           calculateInverse: hasScaleAdjustedChildren
         })
 
-        /* const [firstKf, lastKf] = [
+        const [firstKf, lastKf] = [
           {
             background: prevColor
           },
@@ -167,7 +167,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
         kfs.animations[100] = {
           ...kfs.animations[100],
           ...lastKf
-        } */
+        }
 
         if (hasScaleAdjustedChildren) {
           for (const elm of scaleAdjustedElms) {
