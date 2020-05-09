@@ -28,7 +28,7 @@ export interface CachedStyles {
 
 export interface AnimationOptions {
   duration?: number
-  easing?: string
+  easing?: (x: number) => number
   delay?: number
   stagger?: number
 }
@@ -141,17 +141,16 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
           return
         }
 
-        console.log(hasScaleAdjustedChildren)
-
         const kfs = createKeyframes({
           sx: scaleX,
           sy: scaleY,
           dx: translateX,
           dy: translateY,
+          easeFn: easing,
           calculateInverse: hasScaleAdjustedChildren
         })
 
-        const [firstKf, lastKf] = [
+        /* const [firstKf, lastKf] = [
           {
             background: prevColor
           },
@@ -168,7 +167,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
         kfs.animations[100] = {
           ...kfs.animations[100],
           ...lastKf
-        }
+        } */
 
         if (hasScaleAdjustedChildren) {
           for (const elm of scaleAdjustedElms) {

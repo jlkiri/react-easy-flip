@@ -95,18 +95,14 @@ const InOutChild = (props: InOutChildProps) => {
   // Prevent interactions with exiting elements (treat as non-existent)
   const style = { ...(props.children.props.style || {}), pointerEvents: 'none' }
 
-  return (
-    <React.Fragment>
-      {props.isExiting
-        ? React.cloneElement(props.children, {
-            ...props.children.props,
-            style,
-            'data-flip-id': undefined, // Prevent trigger of shared layout animations
-            ref
-          })
-        : props.children}
-    </React.Fragment>
-  )
+  return props.isExiting
+    ? React.cloneElement(props.children, {
+        ...props.children.props,
+        style,
+        'data-flip-id': undefined, // Prevent trigger of shared layout animations
+        ref
+      })
+    : props.children
 }
 
 const AnimateInOut = React.memo(function AnimateOut({
