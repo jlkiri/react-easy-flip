@@ -189,9 +189,6 @@ export const useFlip = (
           }
         }
 
-        const el: HTMLElement = flipElement as HTMLElement
-        el.style.transformOrigin = 'top left'
-
         const effect = new KeyframeEffect(flipElement, kfs.animations, {
           duration,
           easing: 'linear',
@@ -199,6 +196,8 @@ export const useFlip = (
           fill: 'both'
         })
 
+        // TODO: figure out what to do when position must be updated after animation
+        // e.g. class has actually changed
         const animation = new Animation(effect, document.timeline)
 
         cachedAnimations[flipId] = animation
