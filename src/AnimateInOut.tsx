@@ -29,8 +29,8 @@ interface InOutChildProps {
   childProps: React.ReactElement['props']
   callback?: () => void
   keyframes?: AnimationKeyframes
-  isInitialRender: boolean
-  hasRendered: boolean
+  preventAnimation?: boolean
+  isCached?: boolean
   isExiting: boolean
 }
 
@@ -52,44 +52,58 @@ const onlyValidElements = (children: React.ReactNode) => {
 
 const InOutChild = (props: InOutChildProps) => {
   const ref = React.useRef<Element>(null)
+  const hasRendered = React.useRef(false)
   const localCachedAnimation = React.useRef<Animation | null>(null)
 
   React.useLayoutEffect(() => {
+    if (props.preventAnimation) {
+      hasRendered.current = true
+      console.log('animation prevented')
+      return
+    }
+
+    if (hasRendered.current && !props.isExiting) {
+      console.log('has rendered and not exiting')
+      return
+    }
+
+    !props.isCached && console.log('newly rendered?')
+
     if (!ref.current) return
 
-    if (!props.isInitialRender) {
-      // Skip animations on non-relevant renders (neither exiting nor appearing)
-      if (!props.isExiting && props.hasRendered) return
+    console.log('animating...')
+    // Skip animations on non-relevant renders (neither exiting nor appearing)
 
-      const cachedAnimation = localCachedAnimation.current
+    const cachedAnimation = localCachedAnimation.current
 
-      // If currently playing exiting animation keep playing
-      if (cachedAnimation && isRunning(cachedAnimation)) {
-        return
-      }
-
-      const keyframes = props.keyframes || (props.isExiting ? fadeOut : fadeIn)
-
-      const kfe = new KeyframeEffect(
-        ref.current,
-        [keyframes.from, keyframes.to],
-        {
-          duration: keyframes.duration,
-          easing: keyframes.easing || 'ease',
-          fill: 'both'
-        }
-      )
-
-      const animation = new Animation(kfe, document.timeline)
-
-      if (props.isExiting) {
-        animation.onfinish = () => props.callback && props.callback()
-      }
-
-      animation.play()
-
-      localCachedAnimation.current = animation
+    // If currently playing exiting animation keep playing
+    if (cachedAnimation && isRunning(cachedAnimation)) {
+      return
     }
+
+    const keyframes = props.keyframes || (props.isExiting ? fadeOut : fadeIn)
+
+    const kfe = new KeyframeEffect(
+      ref.current,
+      [keyframes.from, keyframes.to],
+      {
+        duration: keyframes.duration,
+        easing: keyframes.easing || 'ease',
+        fill: 'both'
+      }
+    )
+
+    const animation = new Animation(kfe, document.timeline)
+
+    if (props.isExiting) {
+      animation.onfinish = () => props.callback && props.callback()
+    }
+
+    animation.play()
+
+    localCachedAnimation.current = animation
+
+    hasRendered.current = true
   }, [props])
 
   // Prevent interactions with exiting elements (treat as non-existent)
@@ -102,7 +116,7 @@ const InOutChild = (props: InOutChildProps) => {
         'data-flip-id': undefined, // Prevent trigger of shared layout animations
         ref
       })
-    : props.children
+    : React.cloneElement(props.children, { ...props.children.props, ref })
 }
 
 const AnimateInOut = React.memo(function AnimateOut({
@@ -140,15 +154,16 @@ const AnimateInOut = React.memo(function AnimateOut({
       <InOutChild
         isExiting={false}
         key={getChildKey(child)}
-        keyframes={inKeyframes}
-        hasRendered={false}
         childProps={child.props}
-        isInitialRender
+        isCached={true}
+        preventAnimation
       >
         {child}
       </InOutChild>
     ))
   }
+
+  console.log('render')
 
   // If render is caused by shared layout animation do not play exit animations
   // but keep those already playing
@@ -157,9 +172,26 @@ const AnimateInOut = React.memo(function AnimateOut({
       return presentChildren.current
     }
 
-    presentChildren.current = filteredChildren
+    let renderedChildren = filteredChildren.map((child) => {
+      if (exiting.has(getChildKey(child))) {
+        return child
+      }
 
-    return filteredChildren
+      return (
+        <InOutChild
+          isExiting={false}
+          childProps={child.props}
+          key={getChildKey(child)}
+          isCached={!!cache.get(getChildKey(child))}
+        >
+          {child}
+        </InOutChild>
+      )
+    })
+
+    presentChildren.current = renderedChildren
+
+    return renderedChildren
   }
 
   const presentKeys = presentChildren.current.map(getChildKey)
@@ -169,6 +201,7 @@ const AnimateInOut = React.memo(function AnimateOut({
     // Avoid bugs when callback is called twice (i.e. not exiting anymore)
     if (!exiting.has(key)) return
 
+    cache.delete(key)
     exiting.delete(key)
 
     // Do not force render if multiple exit animations are playing
@@ -215,12 +248,10 @@ const AnimateInOut = React.memo(function AnimateOut({
       0,
       <InOutChild
         isExiting
-        isInitialRender={false}
-        hasRendered
         childProps={child.props}
         key={key}
-        keyframes={outKeyframes}
         callback={removeFromCache}
+        isCached={!!cache.get(getChildKey(child))}
       >
         {child}
       </InOutChild>
@@ -238,9 +269,7 @@ const AnimateInOut = React.memo(function AnimateOut({
         isExiting={false}
         childProps={child.props}
         key={getChildKey(child)}
-        keyframes={inKeyframes}
-        isInitialRender={false}
-        hasRendered={!!cache.get(getChildKey(child))}
+        isCached={!!cache.get(getChildKey(child))}
       >
         {child}
       </InOutChild>

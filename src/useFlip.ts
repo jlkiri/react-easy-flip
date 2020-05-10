@@ -164,8 +164,8 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
           ...firstKf
         }
 
-        kfs.animations[100] = {
-          ...kfs.animations[100],
+        kfs.animations[20] = {
+          ...kfs.animations[20],
           ...lastKf
         }
 
