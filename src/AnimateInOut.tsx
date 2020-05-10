@@ -59,22 +59,15 @@ const InOutChild = (props: InOutChildProps) => {
   React.useLayoutEffect(() => {
     if (props.preventAnimation) {
       hasRendered.current = true
-      console.log('animation prevented')
       return
     }
 
-    if (hasRendered.current && !props.isExiting) {
-      console.log('has rendered and not exiting')
-      return
-    }
-
-    !props.isCached && console.log('newly rendered?')
+    if (hasRendered.current && !props.isExiting) return
 
     if (!ref.current) return
 
     if (!props.isExiting && props.isCached) return
 
-    console.log('animating...')
     // Skip animations on non-relevant renders (neither exiting nor appearing)
 
     const cachedAnimation = localCachedAnimation.current
@@ -183,8 +176,6 @@ const AnimateInOut = React.memo(function AnimateOut({
     ))
   }
 
-  console.log('render')
-
   // If render is caused by shared layout animation do not play exit animations
   // but keep those already playing
   if (!amountChanged) {
@@ -221,9 +212,6 @@ const AnimateInOut = React.memo(function AnimateOut({
     // Avoid bugs when callback is called twice (i.e. not exiting anymore)
     if (!exiting.has(key)) return
 
-    // TODO: Remove from useFlip position cache as well
-
-    console.log('removing')
     childKeyCache.delete(key)
     exiting.delete(key)
 

@@ -84,7 +84,6 @@ export const useFlip = (
 
       for (const element of flippableElements) {
         const { flipId } = (element as FlipHtmlElement).dataset
-        console.log(getRect(element).width, getRect(element).height)
         cachedPositions.set(flipId, {
           styles: {
             bgColor: getComputedBgColor(element)
@@ -147,8 +146,6 @@ export const useFlip = (
           staggerStep++
           return
         }
-
-        // console.log(translateX, translateY, scaleX, scaleY)
 
         const kfs = createKeyframes({
           sx: scaleX,
