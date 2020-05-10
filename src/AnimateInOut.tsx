@@ -143,6 +143,9 @@ const AnimateInOut = ({
   const previousAmount = React.useRef(itemAmount)
   const initialRender = React.useRef(true)
 
+  // TODO: If there is a playing flip animation during an entering animation
+  // the behaviour of the flipped element is weird.
+
   const kfs = { in: inKeyframes, out: outKeyframes }
 
   // Use an optional explicit hint to know when an element truly is removed

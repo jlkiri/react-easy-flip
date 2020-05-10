@@ -25,16 +25,14 @@ export const createKeyframes = ({
   )}${Math.round(dy)}`
   const cachedLoop = cachedLoops.get(cacheKey)
 
-  if (cachedLoop) {
-    return cachedLoop
-  }
+  if (cachedLoop) return cachedLoop
 
   // Figure out the size of the element when collapsed.
   let animations = []
   let inverseAnimations = []
 
   // Decrease by 5, since by 1 works very poor in Firefox (but not in Chromium)
-  for (let step = 100; step >= 0; step = step - 5) {
+  for (let step = 0; step <= 100; step = step + 5) {
     // Remap the step value to an eased one.
     const nStep = step / 100
     const cachedV = cachedEasings.get(nStep)
@@ -45,8 +43,8 @@ export const createKeyframes = ({
     // Calculate the scale of the element.
     const scaleX = sx + (1 - sx) * easedStep
     const scaleY = sy + (1 - sy) * easedStep
-    const translateX = dx * easedStep
-    const translateY = dy * easedStep
+    const translateX = dx - dx * easedStep
+    const translateY = dy - dy * easedStep
 
     animations.push({
       transform: `scale(${scaleX}, ${scaleY}) translate(${translateX}px, ${translateY}px)`
@@ -57,6 +55,7 @@ export const createKeyframes = ({
       const invXScale = 1 / scaleX
       const invYScale = 1 / scaleY
 
+      // TODO: Counter-translations?
       inverseAnimations.push({
         transform: `scale(${invXScale}, ${invYScale})`
       })
