@@ -64,7 +64,7 @@ export const useFlip = (
     const element = getElementByFlipId(flipId)
 
     if (not(empty(cachedAnimations)) && element) {
-      const cachedAnimation = cachedAnimations.current[flipId]
+      const cachedAnimation = cachedAnimations[flipId]
 
       if (cachedAnimation && isRunning(cachedAnimation)) {
         const v = cachedPositions.get(flipId)
@@ -189,6 +189,9 @@ export const useFlip = (
           }
         }
 
+        const el: HTMLElement = flipElement as HTMLElement
+        el.style.transformOrigin = 'top left'
+
         const effect = new KeyframeEffect(flipElement, kfs.animations, {
           duration,
           easing: 'linear',
@@ -198,7 +201,7 @@ export const useFlip = (
 
         const animation = new Animation(effect, document.timeline)
 
-        cachedAnimations.current[flipId] = animation
+        cachedAnimations[flipId] = animation
 
         animation.play()
 

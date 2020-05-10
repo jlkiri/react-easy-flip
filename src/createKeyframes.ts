@@ -57,7 +57,7 @@ export const createKeyframes = ({
 
       // TODO: Counter-translations?
       inverseAnimations.push({
-        transform: `scale(${invXScale}, ${invYScale})`
+        transform: `scale(${invXScale}, ${invYScale}) translate(0px, 0px)`
       })
     }
   }

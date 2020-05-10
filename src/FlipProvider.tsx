@@ -13,7 +13,7 @@ interface FlipContext {
   forceRender: () => void
   pauseAll: () => void
   resumeAll: () => void
-  cachedAnimations: React.MutableRefObject<Animations>
+  cachedAnimations: Animations
   cachedPositions: CachedStyles
   childKeyCache: Map<string, React.ReactElement>
 }
@@ -29,7 +29,7 @@ export const FlipContext = React.createContext<FlipContext>({
 
 export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
   const [forcedRenders, setForcedRenders] = React.useState(0)
-  const cachedAnimations = React.useRef<Animations>(Object.create(null))
+  const cachedAnimations = React.useRef<Animations>(Object.create(null)).current
   const cachedPositions = React.useRef<CachedStyles>(new Map()).current
   const childKeyCache = React.useRef(new Map<string, React.ReactElement>())
     .current
@@ -40,14 +40,14 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
         setForcedRenders(forcedRenders + 1)
       },
       pauseAll: () => {
-        for (const animation of Object.values(cachedAnimations.current)) {
+        for (const animation of Object.values(cachedAnimations)) {
           if (isRunning(animation)) {
             animation.pause()
           }
         }
       },
       resumeAll: () => {
-        for (const animation of Object.values(cachedAnimations.current)) {
+        for (const animation of Object.values(cachedAnimations)) {
           if (isPaused(animation)) {
             animation.play()
           }
