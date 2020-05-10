@@ -203,6 +203,9 @@ const AnimateInOut = React.memo(function AnimateOut({
     // Avoid bugs when callback is called twice (i.e. not exiting anymore)
     if (!exiting.has(key)) return
 
+    // TODO: Remove from useFlip position cache as well
+
+    console.log('removing')
     cache.delete(key)
     exiting.delete(key)
 
@@ -253,7 +256,7 @@ const AnimateInOut = React.memo(function AnimateOut({
         childProps={child.props}
         key={key}
         callback={removeFromCache}
-        isCached={!!cache.get(getChildKey(child))}
+        isCached={true}
       >
         {child}
       </InOutChild>
