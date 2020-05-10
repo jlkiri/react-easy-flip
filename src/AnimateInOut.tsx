@@ -71,6 +71,8 @@ const InOutChild = (props: InOutChildProps) => {
 
     if (!ref.current) return
 
+    if (!props.isExiting && props.isCached) return
+
     console.log('animating...')
     // Skip animations on non-relevant renders (neither exiting nor appearing)
 
@@ -182,7 +184,7 @@ const AnimateInOut = React.memo(function AnimateOut({
           isExiting={false}
           childProps={child.props}
           key={getChildKey(child)}
-          isCached={!!cache.get(getChildKey(child))}
+          isCached={true}
         >
           {child}
         </InOutChild>

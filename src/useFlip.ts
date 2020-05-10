@@ -40,7 +40,11 @@ export interface FlipHtmlElement extends Element {
   }
 }
 
-export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
+export const useFlip = (
+  rootId: string,
+  options: AnimationOptions = {},
+  deps: any
+) => {
   const cachedPositions = React.useRef<CachedStyles>(Object.create(null))
   const { cachedAnimations, pauseAll, resumeAll } = React.useContext(
     FlipContext
@@ -87,7 +91,7 @@ export const useFlip = (rootId: string, options: AnimationOptions = {}) => {
         }
       }
     }
-  }, [rootId])
+  }, [rootId, deps])
 
   useLayoutEffect(() => {
     // Do not do anything on initial render
