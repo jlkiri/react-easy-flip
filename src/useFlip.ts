@@ -5,6 +5,7 @@ import {
   isRunning,
   getElementByFlipId,
   empty,
+  emptyMap,
   not,
   getElementsByRootId,
   getComputedBgColor,
@@ -20,11 +21,6 @@ import { createKeyframes } from './createKeyframes'
 export { FlipProvider, FlipContext }
 
 export type FlipID = string
-export type Rect = DOMRect | ClientRect
-
-export interface CachedStyles {
-  [id: string]: { styles: any; rect: Rect }
-}
 
 export interface AnimationOptions {
   duration?: number
@@ -45,10 +41,12 @@ export const useFlip = (
   options: AnimationOptions = {},
   deps: any
 ) => {
-  const cachedPositions = React.useRef<CachedStyles>(Object.create(null))
-  const { cachedAnimations, pauseAll, resumeAll } = React.useContext(
-    FlipContext
-  )
+  const {
+    cachedAnimations,
+    cachedPositions,
+    pauseAll,
+    resumeAll
+  } = React.useContext(FlipContext)
 
   const {
     delay = DEFAULT_DELAY,
@@ -57,7 +55,7 @@ export const useFlip = (
     stagger = 0
   } = options
 
-  const positionEntries = Object.entries(cachedPositions.current)
+  const positionEntries = cachedPositions.entries()
 
   // If render happened during animation, do not wait for useLayoutEffect
   // and finish all animations, but cache their midflight position for next animation.
@@ -69,8 +67,11 @@ export const useFlip = (
       const cachedAnimation = cachedAnimations.current[flipId]
 
       if (cachedAnimation && isRunning(cachedAnimation)) {
-        cachedPositions.current[flipId].rect = getRect(element)
-        cachedAnimation.finish()
+        const v = cachedPositions.get(flipId)
+        if (v) {
+          cachedPositions.get(flipId)!.rect = getRect(element)
+          cachedAnimation.finish()
+        }
       }
     }
   }
@@ -83,24 +84,25 @@ export const useFlip = (
 
       for (const element of flippableElements) {
         const { flipId } = (element as FlipHtmlElement).dataset
-        cachedPositions.current[flipId] = {
+        console.log(getRect(element).width, getRect(element).height)
+        cachedPositions.set(flipId, {
           styles: {
             bgColor: getComputedBgColor(element)
           },
           rect: getRect(element)
-        }
+        })
       }
     }
   }, [rootId, deps])
 
   useLayoutEffect(() => {
     // Do not do anything on initial render
-    if (empty(cachedPositions.current)) {
-      return
-    }
+    if (emptyMap(cachedPositions)) return
 
-    Object.entries(cachedPositions.current).forEach((entry, i) => {
-      const [flipId, { rect: cachedRect, styles }] = entry
+    let staggerStep = 0
+
+    cachedPositions.forEach((value, flipId) => {
+      const { rect: cachedRect, styles } = value
 
       // Select by data-flip-id which makes it possible to animate the element
       // that re-mounted in some other DOM location (i.e. shared layout transition)
@@ -127,7 +129,7 @@ export const useFlip = (
         const scaleY = getScaleY(cachedRect, nextRect)
 
         // Update the cached position
-        cachedPositions.current[flipId].rect = nextRect
+        cachedPositions.get(flipId)!.rect = nextRect
 
         const nextColor = getComputedBgColor(flipElement)
 
@@ -142,8 +144,11 @@ export const useFlip = (
           scaleX === 1 &&
           scaleY === 1
         ) {
+          staggerStep++
           return
         }
+
+        // console.log(translateX, translateY, scaleX, scaleY)
 
         const kfs = createKeyframes({
           sx: scaleX,
@@ -178,7 +183,7 @@ export const useFlip = (
             const effect = new KeyframeEffect(elm, kfs.inverseAnimations, {
               duration,
               easing: 'linear',
-              delay: delay + stagger * i,
+              delay: delay + stagger * staggerStep,
               fill: 'both'
             })
 
@@ -190,7 +195,7 @@ export const useFlip = (
         const effect = new KeyframeEffect(flipElement, kfs.animations, {
           duration,
           easing: 'linear',
-          delay: delay + stagger * i,
+          delay: delay + stagger * staggerStep,
           fill: 'both'
         })
 
@@ -199,6 +204,8 @@ export const useFlip = (
         cachedAnimations.current[flipId] = animation
 
         animation.play()
+
+        staggerStep++
       }
     })
   })

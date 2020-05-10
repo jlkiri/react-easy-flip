@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { FlipContext } from './FlipProvider'
-import { isRunning } from './helpers'
+import { isRunning, getComputedBgColor, getRect } from './helpers'
 import { fadeIn, fadeOut } from './keyframes'
 
 export { fadeIn, fadeOut }
@@ -54,6 +54,7 @@ const InOutChild = (props: InOutChildProps) => {
   const ref = React.useRef<Element>(null)
   const hasRendered = React.useRef(false)
   const localCachedAnimation = React.useRef<Animation | null>(null)
+  const { cachedPositions } = React.useContext(FlipContext)
 
   React.useLayoutEffect(() => {
     if (props.preventAnimation) {
@@ -97,11 +98,27 @@ const InOutChild = (props: InOutChildProps) => {
 
     const animation = new Animation(kfe, document.timeline)
 
+    const flipId = props.children.props['data-flip-id']
+
     if (props.isExiting) {
-      animation.onfinish = () => props.callback && props.callback()
+      animation.onfinish = () => {
+        cachedPositions.delete(flipId)
+        props.callback && props.callback()
+      }
     }
 
     animation.play()
+
+    if (!props.isExiting) {
+      animation.onfinish = () => {
+        cachedPositions.set(flipId, {
+          styles: {
+            bgColor: getComputedBgColor(ref.current!)
+          },
+          rect: getRect(ref.current!)
+        })
+      }
+    }
 
     localCachedAnimation.current = animation
 
@@ -127,11 +144,12 @@ const AnimateInOut = React.memo(function AnimateOut({
   out: outKeyframes,
   itemAmount
 }: AnimateInOutProps): any {
-  const cache = React.useRef(new Map<string, React.ReactElement>()).current
+  const { forceRender, childKeyCache } = React.useContext(FlipContext)
   const exiting = React.useRef(new Set<string>()).current
   const previousAmount = React.useRef(itemAmount)
   const initialRender = React.useRef(true)
-  const { forceRender } = React.useContext(FlipContext)
+
+  // TODO: REMOVE FROM ALL CACHES BECAUSE MULTIPLE ANIMATEINOUTS CAN EXIST
 
   // Use an optional explicit hint to know when an element truly is removed
   // and not moved to other position in DOM (shared layout transition)
@@ -145,7 +163,7 @@ const AnimateInOut = React.memo(function AnimateOut({
 
   React.useEffect(() => {
     React.Children.forEach(filteredChildren, (child) => {
-      cache.set(getChildKey(child), child)
+      childKeyCache.set(getChildKey(child), child)
     })
   })
 
@@ -206,7 +224,7 @@ const AnimateInOut = React.memo(function AnimateOut({
     // TODO: Remove from useFlip position cache as well
 
     console.log('removing')
-    cache.delete(key)
+    childKeyCache.delete(key)
     exiting.delete(key)
 
     // Do not force render if multiple exit animations are playing
@@ -239,7 +257,7 @@ const AnimateInOut = React.memo(function AnimateOut({
     // Copied from framer-motion. Not sure what the usecase is but just in case.
     if (targetKeys.indexOf(key) !== -1) return
 
-    const child = cache.get(key)
+    const child = childKeyCache.get(key)
 
     if (!child) return
 
@@ -274,7 +292,7 @@ const AnimateInOut = React.memo(function AnimateOut({
         isExiting={false}
         childProps={child.props}
         key={getChildKey(child)}
-        isCached={!!cache.get(getChildKey(child))}
+        isCached={!!childKeyCache.get(getChildKey(child))}
       >
         {child}
       </InOutChild>
