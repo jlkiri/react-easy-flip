@@ -22,11 +22,18 @@ export { FlipProvider, FlipContext }
 
 export type FlipID = string
 
+interface ScaleConfig {
+  duration: number
+  easing: string
+  scale: number
+}
+
 export interface AnimationOptions {
   duration?: number
   easing?: (x: number) => number
   delay?: number
   stagger?: number
+  scaleConfig?: ScaleConfig
 }
 
 export interface FlipHtmlElement extends Element {
