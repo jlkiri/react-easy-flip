@@ -22,6 +22,7 @@ interface AnimateInOutProps {
   in?: AnimationKeyframes
   out?: AnimationKeyframes
   itemAmount?: number
+  playOnFirstRender?: boolean
 }
 
 interface InOutChildProps {
@@ -136,6 +137,7 @@ const AnimateInOut = ({
   children,
   in: inKeyframes = fadeIn,
   out: outKeyframes = fadeOut,
+  playOnFirstRender = false,
   itemAmount
 }: AnimateInOutProps): any => {
   const { forceRender, childKeyCache } = React.useContext(FlipContext)
@@ -173,8 +175,8 @@ const AnimateInOut = ({
         key={getChildKey(child)}
         childProps={child.props}
         keyframes={kfs}
-        isCached
-        preventAnimation
+        isCached={!playOnFirstRender}
+        preventAnimation={!playOnFirstRender}
       >
         {child}
       </InOutChild>
