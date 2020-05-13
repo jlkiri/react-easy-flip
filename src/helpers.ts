@@ -1,4 +1,9 @@
-import { FlipID } from './useFlip'
+import { FlipID, FlipHtmlElement } from './useFlip'
+
+export interface FlipKeyframeEffectOptions extends KeyframeEffectOptions {
+  staggerStep?: number
+  stagger?: number
+}
 
 export function debounce<F extends (...args: any[]) => any>(
   cb: F,
@@ -23,11 +28,16 @@ export const emptyMap = (map: Map<any, any>) => map.size === 0
 
 export const getRect = (element: Element) => element.getBoundingClientRect()
 
+export const isScaleAdjusted = (el: FlipHtmlElement) => el.dataset.preserveScale
+
+export const getScaleAdjustedChildren = (element: Element) =>
+  element.querySelectorAll('[data-preserve-scale=true]')
+
 export const getComputedBgColor = (element: Element) =>
   getComputedStyle(element).getPropertyValue('background-color')
 
 export const getElementByFlipId = (flipId: FlipID) =>
-  document.querySelector(`[data-flip-id=${flipId}]`)
+  document.querySelector(`[data-flip-id=${flipId}]`) as FlipHtmlElement
 
 export const getElementsByRootId = (rootId: string) =>
   document.querySelectorAll(`[data-flip-root-id=${rootId}]`)
@@ -47,3 +57,21 @@ export const getScaleY = (
   cachedRect: DOMRect | ClientRect,
   nextRect: DOMRect | ClientRect
 ) => cachedRect.height / Math.max(nextRect.height, 0.001)
+
+export const createAnimation = (
+  element: FlipHtmlElement,
+  keyframes: Keyframe[],
+  options: FlipKeyframeEffectOptions
+) => {
+  const { duration, delay = 0, stagger = 0, staggerStep = 0 } = options
+  const effect = new KeyframeEffect(element, keyframes, {
+    duration,
+    easing: 'linear',
+    delay: delay + stagger * staggerStep,
+    fill: 'both'
+  })
+
+  // TODO: figure out what to do when position must be updated after animation
+  // e.g. class has actually changed
+  return new Animation(effect, document.timeline)
+}

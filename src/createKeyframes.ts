@@ -3,8 +3,8 @@
 type CreateKeyframes = {
   sx: number
   sy: number
-  dx: number
-  dy: number
+  dx?: number
+  dy?: number
   easeFn: (x: number) => number
   calculateInverse?: boolean
 }

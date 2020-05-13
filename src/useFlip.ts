@@ -13,7 +13,10 @@ import {
   getTranslateX,
   getScaleX,
   getScaleY,
-  getRect
+  getRect,
+  getScaleAdjustedChildren,
+  createAnimation,
+  isScaleAdjusted
 } from './helpers'
 import { DEFAULT_DURATION, DEFAULT_DELAY, DEFAULT_EASING } from './const'
 import { createKeyframes } from './createKeyframes'
@@ -27,6 +30,10 @@ export interface AnimationOptions {
   easing?: (x: number) => number
   delay?: number
   stagger?: number
+  scale?: {
+    x: number
+    y: number
+  }
 }
 
 export interface FlipHtmlElement extends Element {
@@ -35,6 +42,8 @@ export interface FlipHtmlElement extends Element {
     preserveScale: boolean
   }
 }
+
+type ScaleAdjustedChildren = Map<FlipID, FlipHtmlElement>
 
 export const useFlip = (
   rootId: string,
@@ -47,6 +56,8 @@ export const useFlip = (
     pauseAll,
     resumeAll
   } = React.useContext(FlipContext)
+  const scaleAdjustedChildren = React.useRef<ScaleAdjustedChildren>(new Map())
+    .current
 
   const {
     delay = DEFAULT_DELAY,
@@ -69,7 +80,10 @@ export const useFlip = (
       if (cachedAnimation && isRunning(cachedAnimation)) {
         const v = cachedPositions.get(flipId)
         if (v) {
-          cachedPositions.get(flipId)!.rect = getRect(element)
+          cachedPositions.set(flipId, {
+            rect: getRect(element),
+            styles: v.styles
+          })
           cachedAnimation.finish()
         }
       }
@@ -83,7 +97,12 @@ export const useFlip = (
       const flippableElements = root.querySelectorAll(`[data-flip-id]`)
 
       for (const element of flippableElements) {
-        const { flipId } = (element as FlipHtmlElement).dataset
+        const { flipId, preserveScale } = (element as FlipHtmlElement).dataset
+
+        if (preserveScale) {
+          scaleAdjustedChildren.set(flipId, element as FlipHtmlElement)
+        }
+
         cachedPositions.set(flipId, {
           styles: {
             bgColor: getComputedBgColor(element)
@@ -108,9 +127,33 @@ export const useFlip = (
       const flipElement = getElementByFlipId(flipId)
 
       if (flipElement) {
-        const scaleAdjustedElms = flipElement.querySelectorAll(
-          '[data-preserve-scale=true]'
-        )
+        const fallbackScale = options.scale
+
+        const animationOptions = {
+          duration,
+          easing: 'linear',
+          delay: delay + stagger * staggerStep,
+          fill: 'both' as 'both'
+        }
+
+        if (fallbackScale && isScaleAdjusted(flipElement)) {
+          const kfs = createKeyframes({
+            sx: fallbackScale.x,
+            sy: fallbackScale.y,
+            easeFn: easing,
+            calculateInverse: true
+          })
+
+          cachedAnimations[flipId] = createAnimation(
+            flipElement,
+            kfs.inverseAnimations,
+            animationOptions
+          )
+
+          return
+        }
+
+        const scaleAdjustedElms = getScaleAdjustedChildren(flipElement)
 
         const hasScaleAdjustedChildren = scaleAdjustedElms.length > 0
 
@@ -177,32 +220,22 @@ export const useFlip = (
 
         if (hasScaleAdjustedChildren) {
           for (const elm of scaleAdjustedElms) {
-            const effect = new KeyframeEffect(elm, kfs.inverseAnimations, {
-              duration,
-              easing: 'linear',
-              delay: delay + stagger * staggerStep,
-              fill: 'both'
-            })
-
-            const animation = new Animation(effect, document.timeline)
-            animation.play()
+            const flipId = (elm as FlipHtmlElement).dataset.flipId
+            cachedAnimations[flipId] = createAnimation(
+              elm as FlipHtmlElement,
+              kfs.inverseAnimations,
+              animationOptions
+            )
           }
         }
 
-        const effect = new KeyframeEffect(flipElement, kfs.animations, {
-          duration,
-          easing: 'linear',
-          delay: delay + stagger * staggerStep,
-          fill: 'both'
-        })
+        cachedAnimations[flipId] = createAnimation(
+          flipElement,
+          kfs.animations,
+          animationOptions
+        )
 
-        // TODO: figure out what to do when position must be updated after animation
-        // e.g. class has actually changed
-        const animation = new Animation(effect, document.timeline)
-
-        cachedAnimations[flipId] = animation
-
-        animation.play()
+        // animation.play()
 
         staggerStep++
       }
