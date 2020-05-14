@@ -55,7 +55,7 @@ const InOutChild = (props: InOutChildProps) => {
   const ref = React.useRef<Element>(null)
   const hasRendered = React.useRef(false)
   const localCachedAnimation = React.useRef<Animation | null>(null)
-  const { cachedPositions } = React.useContext(FlipContext)
+  const { cachedStyles } = React.useContext(FlipContext)
 
   React.useLayoutEffect(() => {
     // Skip animations on non-relevant renders (neither exiting nor appearing)
@@ -95,7 +95,7 @@ const InOutChild = (props: InOutChildProps) => {
     // Delete from common cache on exit
     if (props.isExiting) {
       animation.onfinish = () => {
-        cachedPositions.delete(flipId)
+        cachedStyles.delete(flipId)
         props.callback && props.callback()
       }
     }
@@ -106,7 +106,7 @@ const InOutChild = (props: InOutChildProps) => {
     // it may have 0 width and height and cause scale problems
     if (!props.isExiting) {
       animation.onfinish = () => {
-        cachedPositions.set(flipId, {
+        cachedStyles.set(flipId, {
           styles: {
             bgColor: getComputedBgColor(ref.current!)
           },

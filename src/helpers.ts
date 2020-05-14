@@ -30,8 +30,14 @@ export const getRect = (element: Element) => element.getBoundingClientRect()
 
 export const isScaleAdjusted = (el: FlipHtmlElement) => el.dataset.preserveScale
 
+export const getFlipId = (el: Element & FlipHtmlElement) => el.dataset.flipId
+
+export const getChildren = (el: Element) => el.children
+
 export const getScaleAdjustedChildren = (element: Element) =>
-  element.querySelectorAll('[data-preserve-scale=true]')
+  Array.from(
+    element.querySelectorAll('[data-preserve-scale=true]')
+  ) as FlipHtmlElement[]
 
 export const getComputedBgColor = (element: Element) =>
   getComputedStyle(element).getPropertyValue('background-color')
