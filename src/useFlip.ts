@@ -105,10 +105,7 @@ export const useFlip = (
             rect: getRect(element),
             styles: v.styles
           })
-          //syncLayout.render(() => {
           cachedAnimation.finish()
-          //})
-          // cachedAnimation.finish()
         }
       }
     }
@@ -143,8 +140,11 @@ export const useFlip = (
 
     // let staggerStep = 0
     let scaleAdjustedChildren: Set<FlipID> = new Set()
+    const en = cachedStyles.entries()
 
-    cachedStyles.forEach((value, flipId) => {
+    //cachedStyles.forEach((value, flipId) => {
+    for (const e of en) {
+      const [flipId, value] = e
       const { rect: cachedRect, styles } = value
 
       // Select by data-flip-id which makes it possible to animate the element
@@ -152,95 +152,61 @@ export const useFlip = (
       const flipElement = getElementByFlipId(flipId)
 
       if (flipElement) {
-        // const fallbackScale = options.scale
-        /* */
-        /* if (fallbackScale && isScaleAdjusted(flipElement)) {
-          transforms.set(flipId, { sx: fallbackScale.x, sy: fallbackScale.y }) */
-        /* const kfs = createKeyframes({
-            sx: fallbackScale.x,
-            sy: fallbackScale.y,
-            easeFn: easing,
-            calculateInverse: true
-          })
-
-          cachedAnimations.set(
-            flipId,
-            createAnimation(
-              flipElement,
-              kfs.inverseAnimations,
-              animationOptions
-            )
-          ) */
-      }
-
-      /* for (const child of getChildren(flipElement)) {
+        /* for (const child of getChildren(flipElement)) {
         scaleAdjustedChildren.add(getFlipId(child as any))
       } */
 
-      // const hasScaleAdjustedChildren = scaleAdjustedElms.length > 0
+        syncLayout.read(() => {
+          const nextRect = getRect(flipElement)
 
-      syncLayout.read(() => {
-        const nextRect = getRect(flipElement)
+          const translateY = getTranslateY(
+            cachedRect as DOMRect,
+            nextRect as DOMRect
+          )
+          const translateX = getTranslateX(
+            cachedRect as DOMRect,
+            nextRect as DOMRect
+          )
+          const scaleX = getScaleX(cachedRect, nextRect)
+          const scaleY = getScaleY(cachedRect, nextRect)
 
-        const translateY = getTranslateY(
-          cachedRect as DOMRect,
-          nextRect as DOMRect
-        )
-        const translateX = getTranslateX(
-          cachedRect as DOMRect,
-          nextRect as DOMRect
-        )
-        const scaleX = getScaleX(cachedRect, nextRect)
-        const scaleY = getScaleY(cachedRect, nextRect)
+          // Update the cached position
+          cachedStyles.get(flipId)!.rect = nextRect
 
-        // Update the cached position
-        cachedStyles.get(flipId)!.rect = nextRect
+          const nextColor = getComputedBgColor(flipElement)
 
-        const nextColor = getComputedBgColor(flipElement)
+          // Cache the color value
+          const prevColor = styles.bgColor
+          styles.bgColor = nextColor
 
-        // Cache the color value
-        const prevColor = styles.bgColor
-        styles.bgColor = nextColor
+          // Do not animate if there is no need to
+          if (
+            translateX === 0 &&
+            translateY === 0 &&
+            scaleX === 1 &&
+            scaleY === 1
+          ) {
+            // staggerStep++
+            return
+          }
 
-        // Do not animate if there is no need to
-        if (
-          translateX === 0 &&
-          translateY === 0 &&
-          scaleX === 1 &&
-          scaleY === 1
-        ) {
-          // staggerStep++
-          return
-        }
-
-        /* const parentId =
+          /* const parentId =
           flipElement.parentElement &&
           getFlipId(flipElement.parentElement as any) */
 
-        console.log('set transform')
+          transforms.set(flipId, {
+            elm: flipElement,
+            // parentId: parentId || null,
+            values: {
+              translateX,
+              translateY,
+              scaleX,
+              scaleY,
+              bgColor: nextColor
+            }
+          })
 
-        transforms.set(flipId, {
-          elm: flipElement,
-          // parentId: parentId || null,
-          values: {
-            translateX,
-            translateY,
-            scaleX,
-            scaleY,
-            bgColor: nextColor
-          }
-        })
-
-        /* const kfs = createKeyframes({
-            sx: scaleX,
-            sy: scaleY,
-            dx: translateX,
-            dy: translateY,
-            easeFn: easing,
-            calculateInverse: hasScaleAdjustedChildren
-          }) */
-
-        /* const [firstKf, lastKf] = [
+          /* const [firstKf, lastKf] = [
           {
             background: prevColor
           },
@@ -249,7 +215,7 @@ export const useFlip = (
           }
         ] */
 
-        /* kfs.animations[0] = {
+          /* kfs.animations[0] = {
             ...kfs.animations[0],
             ...firstKf
           }
@@ -258,33 +224,15 @@ export const useFlip = (
             ...kfs.animations[20],
             ...lastKf
           } */
-
-        /* if (hasScaleAdjustedChildren) {
-            for (const elm of scaleAdjustedElms) {
-              const flipId = (elm as FlipHtmlElement).dataset.flipId
-              cachedAnimations.set(
-                flipId,
-                createAnimation(
-                  elm as FlipHtmlElement,
-                  kfs.inverseAnimations,
-                  animationOptions
-                )
-              )
-            }
-          } */
-
-        /* cachedAnimations.set(
-            flipId,
-            createAnimation(flipElement, kfs.animations, animationOptions)
-          ) */
-      })
+        })
+      }
 
       // staggerStep++
 
       /*  const scaleAdjustedChildren = Array.from(getElementsByRootId(rootId))
             .map(getScaleAdjustedChildren)
             .flat() */
-    })
+    }
 
     const animationOptions = {
       duration,
@@ -306,12 +254,12 @@ export const useFlip = (
       }
     } */
 
-    console.log(transforms.size)
+    const entries = transforms.entries()
 
     syncLayout.render(() => {
-      transforms.forEach((transform, flipId) => {
-        console.log('flipId')
-
+      for (const e of entries) {
+        // transforms.forEach((transform, flipId) => {
+        const [flipId, transform] = e
         const { scaleX, scaleY, translateX, translateY } = transform.values
         const kfs = createKeyframes({
           sx: scaleX,
@@ -330,12 +278,10 @@ export const useFlip = (
 
         cachedAnimations.set(flipId, animation)
 
-        console.log('play')
-
         animation.play()
 
         transforms.delete(flipId)
-      })
+      }
     })
   })
 
