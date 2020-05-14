@@ -4,35 +4,32 @@ import { isPaused, isRunning } from './helpers'
 export type Rect = DOMRect | ClientRect
 
 export type CachedStyles = Map<string, { styles: any; rect: Rect }>
-
-interface Animations {
-  [flipId: string]: Animation
-}
+export type Animations = Map<string, Animation>
+export type ChildKeyCache = Map<string, React.ReactElement>
 
 interface FlipContext {
   forceRender: () => void
   pauseAll: () => void
   resumeAll: () => void
   cachedAnimations: Animations
-  cachedPositions: CachedStyles
-  childKeyCache: Map<string, React.ReactElement>
+  cachedStyles: CachedStyles
+  childKeyCache: ChildKeyCache
 }
 
 export const FlipContext = React.createContext<FlipContext>({
   forceRender: () => {},
   pauseAll: () => {},
   resumeAll: () => {},
-  cachedAnimations: Object.create(null),
-  cachedPositions: new Map(),
+  cachedAnimations: new Map(),
+  cachedStyles: new Map(),
   childKeyCache: new Map()
 })
 
 export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
   const [forcedRenders, setForcedRenders] = React.useState(0)
-  const cachedAnimations = React.useRef<Animations>(Object.create(null)).current
-  const cachedPositions = React.useRef<CachedStyles>(new Map()).current
-  const childKeyCache = React.useRef(new Map<string, React.ReactElement>())
-    .current
+  const cachedAnimations = React.useRef<Animations>(new Map()).current
+  const cachedStyles = React.useRef<CachedStyles>(new Map()).current
+  const childKeyCache = React.useRef(new Map()).current
 
   const ctx = React.useMemo(() => {
     return {
@@ -40,21 +37,21 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
         setForcedRenders(forcedRenders + 1)
       },
       pauseAll: () => {
-        for (const animation of Object.values(cachedAnimations)) {
+        for (const animation of cachedAnimations.values()) {
           if (isRunning(animation)) {
             animation.pause()
           }
         }
       },
       resumeAll: () => {
-        for (const animation of Object.values(cachedAnimations)) {
+        for (const animation of cachedAnimations.values()) {
           if (isPaused(animation)) {
             animation.play()
           }
         }
       },
       cachedAnimations,
-      cachedPositions,
+      cachedStyles,
       childKeyCache
     }
   }, [forcedRenders])
