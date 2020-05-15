@@ -4,7 +4,6 @@ import { FlipProvider, FlipContext } from './FlipProvider'
 import {
   isRunning,
   getElementByFlipId,
-  empty,
   emptyMap,
   not,
   getElementsByRootId,
@@ -14,11 +13,7 @@ import {
   getScaleX,
   getScaleY,
   getRect,
-  getScaleAdjustedChildren,
-  createAnimation,
-  isScaleAdjusted,
-  getFlipId,
-  getChildren
+  createAnimation
 } from './helpers'
 import { DEFAULT_DURATION, DEFAULT_DELAY, DEFAULT_EASING } from './const'
 import { createKeyframes } from './createKeyframes'
@@ -52,6 +47,7 @@ type TransformValues = {
   scaleX: number
   scaleY: number
   bgColor: string
+  prevBgColor: string
 }
 
 type Transforms = Map<
@@ -83,16 +79,13 @@ export const useFlip = (
   const {
     delay = DEFAULT_DELAY,
     duration = DEFAULT_DURATION,
-    easing = DEFAULT_EASING,
-    stagger = 0
+    easing = DEFAULT_EASING
   } = options
-
-  const styleEntries = cachedStyles.keys()
 
   // If render happened during animation, do not wait for useLayoutEffect
   // and finish all animations, but cache their midflight position for next animation.
   // getBoundingClientRect will return correct values only here and not in useLayoutEffect!
-  for (const flipId of styleEntries) {
+  for (const flipId of cachedStyles.keys()) {
     const element = getElementByFlipId(flipId)
 
     if (not(emptyMap(cachedAnimations)) && element) {
@@ -103,7 +96,9 @@ export const useFlip = (
         if (v) {
           cachedStyles.set(flipId, {
             rect: getRect(element),
-            styles: v.styles
+            styles: {
+              bgColor: getComputedBgColor(getElementByFlipId(flipId))
+            }
           })
           cachedAnimation.finish()
         }
@@ -138,8 +133,6 @@ export const useFlip = (
     // Do not do anything on initial render
     if (emptyMap(cachedStyles)) return
 
-    // let staggerStep = 0
-    let scaleAdjustedChildren: Set<FlipID> = new Set()
     const en = cachedStyles.entries()
 
     //cachedStyles.forEach((value, flipId) => {
@@ -152,10 +145,6 @@ export const useFlip = (
       const flipElement = getElementByFlipId(flipId)
 
       if (flipElement) {
-        /* for (const child of getChildren(flipElement)) {
-        scaleAdjustedChildren.add(getFlipId(child as any))
-      } */
-
         syncLayout.read(() => {
           const nextRect = getRect(flipElement)
 
@@ -175,10 +164,6 @@ export const useFlip = (
 
           const nextColor = getComputedBgColor(flipElement)
 
-          // Cache the color value
-          const prevColor = styles.bgColor
-          styles.bgColor = nextColor
-
           // Do not animate if there is no need to
           if (
             translateX === 0 &&
@@ -186,52 +171,25 @@ export const useFlip = (
             scaleX === 1 &&
             scaleY === 1
           ) {
-            // staggerStep++
             return
           }
 
-          /* const parentId =
-          flipElement.parentElement &&
-          getFlipId(flipElement.parentElement as any) */
-
           transforms.set(flipId, {
             elm: flipElement,
-            // parentId: parentId || null,
             values: {
               translateX,
               translateY,
               scaleX,
               scaleY,
+              prevBgColor: styles.bgColor,
               bgColor: nextColor
             }
           })
 
-          /* const [firstKf, lastKf] = [
-          {
-            background: prevColor
-          },
-          {
-            background: nextColor
-          }
-        ] */
-
-          /* kfs.animations[0] = {
-            ...kfs.animations[0],
-            ...firstKf
-          }
-
-          kfs.animations[20] = {
-            ...kfs.animations[20],
-            ...lastKf
-          } */
+          // Cache the color value
+          styles.bgColor = nextColor
         })
       }
-
-      // staggerStep++
-
-      /*  const scaleAdjustedChildren = Array.from(getElementsByRootId(rootId))
-            .map(getScaleAdjustedChildren)
-            .flat() */
     }
 
     const animationOptions = {
@@ -241,26 +199,23 @@ export const useFlip = (
       fill: 'both' as 'both'
     }
 
-    /* for (const child of scaleAdjustedChildren) {
-      const transform = transforms.get(child)
-      if (transform) {
-        if (transform.parentId) {
-          const parentTransform = transforms.get(transform.parentId)
-          if (parentTransform) {
-            transform.values.scaleX = 1 / parentTransform.values.scaleX
-            transform.values.scaleY = 1 / parentTransform.values.scaleY
-          }
-        }
-      }
-    } */
+    // const entries = transforms.entries()
 
-    const entries = transforms.entries()
+    for (const flipId of cachedStyles.keys()) {
+      syncLayout.render(() => {
+        const transform = transforms.get(flipId)
 
-    syncLayout.render(() => {
-      for (const e of entries) {
-        // transforms.forEach((transform, flipId) => {
-        const [flipId, transform] = e
-        const { scaleX, scaleY, translateX, translateY } = transform.values
+        if (!transform) return
+
+        const {
+          scaleX,
+          scaleY,
+          translateX,
+          translateY,
+          prevBgColor,
+          bgColor
+        } = transform.values
+
         const kfs = createKeyframes({
           sx: scaleX,
           sy: scaleY,
@@ -270,6 +225,10 @@ export const useFlip = (
           calculateInverse: false
         })
 
+        kfs.animations[0].background = prevBgColor
+
+        kfs.animations[20].background = bgColor
+
         const animation = createAnimation(
           transform.elm,
           kfs.animations,
@@ -277,12 +236,11 @@ export const useFlip = (
         )
 
         cachedAnimations.set(flipId, animation)
+        transforms.delete(flipId)
 
         animation.play()
-
-        transforms.delete(flipId)
-      }
-    })
+      })
+    }
   })
 
   useSyncLayout()

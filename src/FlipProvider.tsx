@@ -3,7 +3,10 @@ import { isPaused, isRunning } from './helpers'
 
 export type Rect = DOMRect | ClientRect
 
-export type CachedStyles = Map<string, { styles: any; rect: Rect }>
+export type CachedStyles = Map<
+  string,
+  { styles: { bgColor: string }; rect: Rect }
+>
 export type Animations = Map<string, Animation>
 export type ChildKeyCache = Map<string, React.ReactElement>
 

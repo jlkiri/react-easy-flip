@@ -23,21 +23,11 @@ export const isPaused = (animation: Animation) =>
   animation.playState === 'paused'
 
 export const not = (bool: boolean) => !bool
-export const empty = (obj: object) => Object.keys(obj).length === 0
 export const emptyMap = (map: Map<any, any>) => map.size === 0
 
 export const getRect = (element: Element) => element.getBoundingClientRect()
 
-export const isScaleAdjusted = (el: FlipHtmlElement) => el.dataset.preserveScale
-
 export const getFlipId = (el: Element & FlipHtmlElement) => el.dataset.flipId
-
-export const getChildren = (el: Element) => el.children
-
-export const getScaleAdjustedChildren = (element: Element) =>
-  Array.from(
-    element.querySelectorAll('[data-preserve-scale=true]')
-  ) as FlipHtmlElement[]
 
 export const getComputedBgColor = (element: Element) =>
   getComputedStyle(element).getPropertyValue('background-color')
