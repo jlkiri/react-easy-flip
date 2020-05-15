@@ -27,17 +27,11 @@ export interface AnimationOptions {
   duration?: number
   easing?: (x: number) => number
   delay?: number
-  stagger?: number
-  scale?: {
-    x: number
-    y: number
-  }
 }
 
 export interface FlipHtmlElement extends Element {
   dataset: {
     flipId: FlipID
-    preserveScale: boolean
   }
 }
 
@@ -54,12 +48,9 @@ type Transforms = Map<
   FlipID,
   {
     elm: FlipHtmlElement
-    parentId?: FlipID | null
     values: TransformValues
   }
 >
-
-type ScaleAdjustedChildren = Map<FlipID, FlipHtmlElement>
 
 export const useFlip = (
   rootId: string,
@@ -72,8 +63,6 @@ export const useFlip = (
     pauseAll,
     resumeAll
   } = React.useContext(FlipContext)
-  const scaleAdjustedChildren = React.useRef<ScaleAdjustedChildren>(new Map())
-    .current
   const transforms = React.useRef<Transforms>(new Map()).current
 
   const {
@@ -94,17 +83,23 @@ export const useFlip = (
       if (cachedAnimation && isRunning(cachedAnimation)) {
         const v = cachedStyles.get(flipId)
         if (v) {
-          cachedStyles.set(flipId, {
-            rect: getRect(element),
-            styles: {
-              bgColor: getComputedBgColor(getElementByFlipId(flipId))
-            }
+          syncLayout.prewrite(() => {
+            cachedStyles.set(flipId, {
+              rect: getRect(element),
+              styles: {
+                bgColor: getComputedBgColor(getElementByFlipId(flipId))
+              }
+            })
           })
-          cachedAnimation.finish()
+          syncLayout.render(() => {
+            cachedAnimation.finish()
+          })
         }
       }
     }
   }
+
+  syncLayout.flush()
 
   React.useEffect(() => {
     // Cache element positions on initial render for subsequent calculations
@@ -113,11 +108,7 @@ export const useFlip = (
       const flippableElements = root.querySelectorAll(`[data-flip-id]`)
 
       for (const element of flippableElements) {
-        const { flipId, preserveScale } = (element as FlipHtmlElement).dataset
-
-        if (preserveScale) {
-          scaleAdjustedChildren.set(flipId, element as FlipHtmlElement)
-        }
+        const { flipId } = (element as FlipHtmlElement).dataset
 
         cachedStyles.set(flipId, {
           styles: {
@@ -133,11 +124,9 @@ export const useFlip = (
     // Do not do anything on initial render
     if (emptyMap(cachedStyles)) return
 
-    const en = cachedStyles.entries()
+    const cachedStyleEntries = cachedStyles.entries()
 
-    //cachedStyles.forEach((value, flipId) => {
-    for (const e of en) {
-      const [flipId, value] = e
+    for (const [flipId, value] of cachedStyleEntries) {
       const { rect: cachedRect, styles } = value
 
       // Select by data-flip-id which makes it possible to animate the element
