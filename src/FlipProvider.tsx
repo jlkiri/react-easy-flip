@@ -57,7 +57,7 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
       cachedStyles,
       childKeyCache
     }
-  }, [forcedRenders])
+  }, [forcedRenders, childKeyCache, cachedStyles, cachedAnimations])
 
   return <FlipContext.Provider value={ctx}>{children}</FlipContext.Provider>
 }

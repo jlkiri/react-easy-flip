@@ -42,7 +42,8 @@ export const syncLayout = {
   prewrite: registerSyncCallback('prewrite'),
   read: registerSyncCallback('read'),
   render: registerSyncCallback('render'),
-  flush: flushAllJobs
+  flush: flushAllJobs,
+  jobLength: () => [jobs.prewrite.length, jobs.read.length, jobs.render.length]
 }
 
 export function useSyncLayout() {

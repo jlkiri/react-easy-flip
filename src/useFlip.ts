@@ -32,6 +32,7 @@ export interface AnimationOptions {
 export interface FlipHtmlElement extends Element {
   dataset: {
     flipId: FlipID
+    preserveScale: boolean
   }
 }
 
@@ -48,7 +49,7 @@ type Transforms = Map<
   FlipID,
   {
     elm: FlipHtmlElement
-    values: TransformValues
+    kfs: any
   }
 >
 
@@ -118,7 +119,7 @@ export const useFlip = (
         })
       }
     }
-  }, [rootId, deps])
+  }, [rootId, deps, cachedStyles])
 
   useLayoutEffect(() => {
     // Do not do anything on initial render
@@ -163,16 +164,21 @@ export const useFlip = (
             return
           }
 
+          const kfs = createKeyframes({
+            sx: scaleX,
+            sy: scaleY,
+            dx: translateX,
+            dy: translateY,
+            easeFn: easing,
+            calculateInverse: true
+          })
+
+          kfs.animations[0].background = styles.bgColor
+          kfs.animations[20].background = nextColor
+
           transforms.set(flipId, {
             elm: flipElement,
-            values: {
-              translateX,
-              translateY,
-              scaleX,
-              scaleY,
-              prevBgColor: styles.bgColor,
-              bgColor: nextColor
-            }
+            kfs: kfs.animations
           })
 
           // Cache the color value
@@ -196,31 +202,9 @@ export const useFlip = (
 
         if (!transform) return
 
-        const {
-          scaleX,
-          scaleY,
-          translateX,
-          translateY,
-          prevBgColor,
-          bgColor
-        } = transform.values
-
-        const kfs = createKeyframes({
-          sx: scaleX,
-          sy: scaleY,
-          dx: translateX,
-          dy: translateY,
-          easeFn: easing,
-          calculateInverse: false
-        })
-
-        kfs.animations[0].background = prevBgColor
-
-        kfs.animations[20].background = bgColor
-
         const animation = createAnimation(
           transform.elm,
-          kfs.animations,
+          transform.kfs,
           animationOptions
         )
 

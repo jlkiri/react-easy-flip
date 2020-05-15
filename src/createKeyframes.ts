@@ -31,7 +31,7 @@ export const createKeyframes = ({
   let animations = []
   let inverseAnimations = []
 
-  // Decrease by 5, since by 1 works very poor in Firefox (but not in Chromium)
+  // Increase by 5, since by 1 works very poor in Firefox (but not in Chromium)
   for (let step = 0; step <= 100; step = step + 5) {
     // Remap the step value to an eased one.
     const nStep = step / 100

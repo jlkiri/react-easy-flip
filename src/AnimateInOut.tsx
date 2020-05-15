@@ -100,8 +100,6 @@ const InOutChild = (props: InOutChildProps) => {
       }
     }
 
-    animation.play()
-
     // Set position only after entering animation is finished. If not
     // it may have 0 width and height and cause scale problems
     if (!props.isExiting) {
@@ -115,10 +113,12 @@ const InOutChild = (props: InOutChildProps) => {
       }
     }
 
+    animation.play()
+
     localCachedAnimation.current = animation
 
     hasRendered.current = true
-  }, [props])
+  }, [props, cachedStyles])
 
   // Prevent interactions with exiting elements (treat as non-existent)
   const style = { ...(props.children.props.style || {}), pointerEvents: 'none' }
