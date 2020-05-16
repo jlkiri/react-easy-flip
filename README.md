@@ -23,7 +23,7 @@
 
 * Built-in easing functions
 
-- Super lightweight
+- Lightweight
 
 ## Previous README versions
 
