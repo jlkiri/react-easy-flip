@@ -86,12 +86,12 @@ useFlip(rootId, animationOptions, deps)
 
 Animation options is an object.
 
-|    Property    |    Default     | Required |    Type    |                                           Details                                            |
-| :------------: | :------------: | :------: | :--------: | :------------------------------------------------------------------------------------------: |
-|   `duration`   |      400       | `false`  |  `number`  |                                   Animation duration (ms)                                    |
-|    `easing`    | `easeOutCubic` | `false`  | `function` |                Easing function (that can be imported from `react-easy-flip`)                 |
-|    `delay`     |       0        | `false`  |  `number`  |                                       Animation delay                                        |
-| `animateColor` |     false      | `false`  | `boolean`  | A boolean that says whether background color of the animated element should also be animated |
+|    Property    |    Default     | Required |    Type    |                            Details                            |
+| :------------: | :------------: | :------: | :--------: | :-----------------------------------------------------------: |
+|   `duration`   |      400       | `false`  |  `number`  |                    Animation duration (ms)                    |
+|    `easing`    | `easeOutCubic` | `false`  | `function` | Easing function (that can be imported from `react-easy-flip`) |
+|    `delay`     |       0        | `false`  |  `number`  |                        Animation delay                        |
+| `animateColor` |     false      | `false`  | `boolean`  |       Animate background color of the animated element        |
 
 Example:
 
@@ -113,6 +113,57 @@ const SomeReactComponent = () => {
   )
 }
 ```
+
+### Exported easings
+
+`react-easy-flip` exports ready-to-use easing functions.
+
+- linear
+- easeInSine
+- easeOutSine
+- easeInOutSine
+- easeInCubic
+- easeOutCubic
+- easeInOutCubic
+- easeInQuint
+- easeOutQuint
+- easeInOutQuint
+- easeInBack
+- easeOutBack
+- easeInOutBack
+
+### AnimateInOut
+
+While `useFlip` can animate all kinds of position changes, it does not animate mount/unmount animations (e.g. fade in/out). For this purpose the `<AnimateInOut />` component is also exported. To use it, simple wrap with it the components/elements which you want to be animated. By default the initial render is not animated, but this can be changed with a prop.
+
+Every element wrapped with a `<AnimateInOut />` **must** have a unique key prop.
+
+Example:
+
+```javascript
+import { AnimateInOut } from 'react-easy-flip`
+
+const SomeReactComponent = () => {
+  return (
+      <AnimateInOut>
+        <div key="flipped-1" />
+        <div key="flipped-2" />
+        <div key="flipped-3" />
+      </AnimateInOut>
+  )
+}
+```
+
+Here are all props that you can pass to `<AnimateInOut />`:
+
+|      Property       |   Default   | Required |         Type         |                            Details                             |
+| :-----------------: | :---------: | :------: | :------------------: | :------------------------------------------------------------: |
+|        `in`         |  `fadeIn`   | `false`  | `AnimationKeyframes` |                    Mount animation options                     |
+|        `out`        |  `fadeOut`  | `false`  | `AnimationKeyframes` |                   Unmount animation options                    |
+| `playOnFirstRender` |   `false`   | `false`  |      `boolean`       |                    Animate on first render                     |
+|    `itemAmount`     | `undefined` | `false`  |       `number`       | An explicit amount of current children (see explanation below) |
+
+What is `itemAmount` for? In most cases this is not needed. But if your element is animated with a shared layout transition (such as moving from one list to another), this means that it doesn't need an unmount animation. In order to avoid two animations being applied to one element, provide the amount. For example, if this is a todo-app-like application, keep the number of both todo and done items. Moving from todo to done doesn't change the total amount of items, but `<AnimateInOut />` does not know that until you tell it. See the recipes below.
 
 ## Comparison with other libraries
 
@@ -176,9 +227,12 @@ An example of passing custom animation options to `<AnimateInOut>`. Here the ima
 
 This library requires React version 16.8.0 or higher (the one with Hooks).
 
-## Done in 3.0
+## Contribution
 
-- [x] Full Typescript support
-- [x] Add support for animating scale and shared element transitions
-- [x] Add comprehensive examples
-- [x] Add tests
+Any kind of contribution is welcome!
+
+1. Open an issue or pick an existing one that you want to work on
+2. Fork this repository
+3. Clone your fork to work on it locally
+4. Make changes
+5. Run `yarn build` and make sure that it builds without crash
