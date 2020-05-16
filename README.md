@@ -31,7 +31,7 @@ This is a README for 4.0.0-beta. The v3 README can be found [here](./README-v3.m
 
 ## Demo
 
-Demo link goes here.
+https://react-easy-flip-demo.now.sh/
 
 Repository: [react-easy-flip-demo](https://github.com/jlkiri/react-easy-flip-demo)
 
