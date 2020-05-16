@@ -37,7 +37,7 @@ Repository: [react-easy-flip-demo](https://github.com/jlkiri/react-easy-flip-dem
 
 ## Install
 
-`npm install react-easy-flip`
+`npm install react-easy-flip@beta`
 
 ## Get started
 
