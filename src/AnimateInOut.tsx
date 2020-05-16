@@ -138,7 +138,7 @@ const AnimateInOut = ({
   in: inKeyframes = fadeIn,
   out: outKeyframes = fadeOut,
   playOnFirstRender = false,
-  itemAmount
+  itemAmount = undefined
 }: AnimateInOutProps): any => {
   const { forceRender, childKeyCache } = React.useContext(FlipContext)
   const exiting = React.useRef(new Set<string>()).current
@@ -152,7 +152,8 @@ const AnimateInOut = ({
 
   // Use an optional explicit hint to know when an element truly is removed
   // and not moved to other position in DOM (shared layout transition)
-  const amountChanged = itemAmount !== previousAmount.current
+  const amountChanged =
+    itemAmount === undefined || itemAmount !== previousAmount.current
 
   previousAmount.current = itemAmount
 
