@@ -25,7 +25,7 @@
 
 - Super lightweight
 
-## Previos version README
+## Previous README versions
 
 This is a README for 4.0.0-beta. The v3 README can be found [here](./README-v3.md).
 
