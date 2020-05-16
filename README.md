@@ -208,6 +208,16 @@ This is an todo-app-like example of shared layout animations. Click on any recta
   <img src="./assets/sharedlayout.gif" width='400px' alt='shared layout  animation' />
 </p>
 
+### Shared layout animation (navigation)
+
+One nice usecase for shared layout animation is navigation bars where we want to move the highlighting indicator smoothly between tabs.
+
+[Go to code](https://github.com/jlkiri/react-easy-flip-demo/blob/master/pages/magic-nav.tsx)
+
+<p align="center">
+  <img src="./assets/nav.gif" width='400px' alt='shared layout  animation' />
+</p>
+
 ### In/out (mount/unmount) animation (opacity)
 
 The fade in and out keyframes are default and work out of box (= you do not need to explicitly pass them).
