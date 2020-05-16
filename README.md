@@ -1,4 +1,5 @@
-![minzipped](https://badgen.net/bundlephobia/minzip/react-easy-flip@3.0.0)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/react-easy-flip@beta)
+![npm (tag)](https://img.shields.io/npm/v/react-easy-flip/beta)
 
 <p align="center">
   <img src="./assets/logo.gif" width='500px' alt='react-easy-flip animation logo' />
@@ -6,149 +7,237 @@
 
 # React Easy Flip
 
-<center><b>A lightweight React library for smooth FLIP animations (2.3KB minified + gzipped)</b></center>
+⚛ A lightweight React library for smooth FLIP animations
+
+## Features
+
+- Animates the unanimatable (DOM positions, mounts/unmounts)
+
+- One hook for many usecases
+
+- Uses the [Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API) (WAAPI)
+
+* Stable and smooth 60fps animations
+
+- SSR-friendly
+
+* Built-in easing functions
+
+- Super lightweight
+
+## Previos version README
+
+This is a README for 4.0.0-beta. The v3 README can be found [here](./README-v3.md).
 
 ## Demo
 
-https://demo.jlkiri.now.sh/
+Demo link goes here.
+
+Repository: [react-easy-flip-demo](https://github.com/jlkiri/react-easy-flip-demo)
 
 ## Install
 
-`npm install react-easy-flip`  
-OR  
-`yarn add react-easy-flip`
+`npm install react-easy-flip`
 
 ## Get started
 
-The library consists of two independent hooks: `useSimpleFlip` and `useFlipGroup`. Use `useFlipGroup` if you need to animate position or size of an indefinite number of children (see examples below). Use `useSimpleFlip` for everything else.
-
-1. Import `useSimpleFlip` hook:
+1. Import `useFlip` hook and `FlipProvider`:
 
 ```javascript
-import { useSimpleFlip } from 'react-easy-flip'
+import { useFlip, FlipProvider } from 'react-easy-flip'
 ```
 
-OR
+2. Wrap your app (or at least a component that contains animated children) with a `FlipProvider`
 
-```javascript
-const { useSimpleFlip } = require('react-easy-flip')
+```jsx
+<FlipProvider>
+  <MyApp />
+</FlipProvider>
 ```
 
-2. Pick a unique `id` and assign it to the element you want to animate
-3. Use the hook by passing it the id and dependencies that you would normally pass to `useEffect` (e.g. an array that is used to render children):
+3. Assign a `data-flip-root-id` to any parent of the element(s) you want to animate
 
-```javascript
-useSimpleFlip({ flipId: myId, flag: myDeps })
+```jsx
+<div data-flip-root-id="flip-root">
+  <AnimatedChildren>
+</div>
 ```
 
-## Usage
+4. Pick a unique `data-flip-id` and assign it to the element(s) you want to animate. It can be the same as a `key` prop
 
-### useSimpleFlip
+```jsx
+<img data-flip-id="animated-image" />
+```
 
-`useSimpleAnimation` requires one argument, which is minimally an object with the `id` of your animated element and `boolean` hook [dependencies](https://reactjs.org/docs/hooks-reference.html#conditionally-firing-an-effect). You may optionally provide:
-
-a) a callback to be executed after an animation is done: `onTransitionEnd`
-b) CSS transition options
-c) a special flag that tells the hook whether the transition is "shared"
-
-|       Field       | Required |    Type    |                                      Details                                      |
-| :---------------: | :------: | :--------: | :-------------------------------------------------------------------------------: |
-|     `flipId`      |  `true`  |  `string`  | A React reference to a parent element which contains children you want to animate |
-|      `flag`       |  `true`  | `boolean`  |                                 Hook dependencies                                 |
-|      `opts`       | `false`  |  `object`  |                             Animation options object                              |
-| `onTransitionEnd` | `false`  | `function` |               A callback to be executed after an animation is done                |
-|    `isShared`     | `false`  | `boolean`  |       A special flag that tells the hook whether the transition is "shared"       |
-
-### useFlipGroup
-
-`useFlipGroup` requires one argument, which is minimally an object with the `id` of your animated element and hook [dependencies](https://reactjs.org/docs/hooks-reference.html#conditionally-firing-an-effect). You _must_ also attach a unique `data-id` to every child that you want to animate (see examples below). The `data-id` can be the same as a `key` prop.
-
-Just like in `useSimpleFlip` you may optionally provide:
-
-a) a callback to be executed after an animation is done: `onTransitionEnd`
-b) CSS transition options
-
-|       Field       | Required |    Type    |                                      Details                                      |
-| :---------------: | :------: | :--------: | :-------------------------------------------------------------------------------: |
-|     `flipId`      |  `true`  |  `string`  | A React reference to a parent element which contains children you want to animate |
-|      `deps`       |  `true`  |   `any`    |                                 Hook dependencies                                 |
-|      `opts`       | `false`  |  `object`  |                             Animation options object                              |
-| `onTransitionEnd` | `false`  | `function` |               A callback to be executed after an animation is done                |
-
-### Options in detail
-
-You may add an `opts` options object to the argument of `useSimpleFlip` or `useFlipGroup`. It allows you to specify CSS transition duration, easing function and animation delay:
-
-|    Field     | Default  |   Type   |                     Details                     |
-| :----------: | :------: | :------: | :---------------------------------------------: |
-| `transition` |  `700`   | `number` |      Transition duration (in milliseconds)      |
-|   `easing`   | `"ease"` | `string` | Animation easing function (any valid CSS value) |
-|   `delay`    |   `0`    | `number` |        Animation delay (in milliseconds)        |
-
-Usage example:
+5. Use the hook by passing it the root ID you picked in (3)
 
 ```javascript
-const opts = {
-  transition: 200,
-  easing: 'cubic-bezier(0.39, 0.575, 0.565, 1)',
-  delay: 300
+useFlip(rootId)
+```
+
+And that's it!
+
+## Usage details
+
+### useFlip
+
+`useFlip` requires one argument, which is an ID of the root, i.e. any parent whose children you want to animate. You can optionally pass an options object with animation options (see details below) as a second argument. Third argument is the optional dependencies which you would normally pass to a `useEffect` hook: use it if you need to explicitly tell `react-easy-flip` that items you want to animate changed.
+
+```
+useFlip(rootId, animationOptions, deps)
+```
+
+#### Animation optons
+
+Animation options is an object.
+
+|    Property    |    Default     | Required |    Type    |                            Details                            |
+| :------------: | :------------: | :------: | :--------: | :-----------------------------------------------------------: |
+|   `duration`   |      400       | `false`  |  `number`  |                    Animation duration (ms)                    |
+|    `easing`    | `easeOutCubic` | `false`  | `function` | Easing function (that can be imported from `react-easy-flip`) |
+|    `delay`     |       0        | `false`  |  `number`  |                        Animation delay                        |
+| `animateColor` |     false      | `false`  | `boolean`  |       Animate background color of the animated element        |
+
+Example:
+
+```javascript
+import { easeInOutQuint } from 'react-easy-flip`
+
+const SomeReactComponent = () => {
+  const animationOptions = {
+    duration: 2000,
+    easing: easeInOutQuint,
+  }
+
+  useFlip(rootId, animationOptions)
+
+  return (
+    <div data-flip-root-id="root">
+      <div data-flip-id="flipped" />
+    </div>
+  )
 }
-
-useSimpleFlip({ flipId: 'uniqueId', opts, flag: isClicked })
 ```
+
+### Exported easings
+
+`react-easy-flip` exports ready-to-use easing functions.
+
+- linear
+- easeInSine
+- easeOutSine
+- easeInOutSine
+- easeInCubic
+- easeOutCubic
+- easeInOutCubic
+- easeInQuint
+- easeOutQuint
+- easeInOutQuint
+- easeInBack
+- easeOutBack
+- easeInOutBack
+
+### AnimateInOut
+
+While `useFlip` can animate all kinds of position changes, it does not animate mount/unmount animations (e.g. fade in/out). For this purpose the `<AnimateInOut />` component is also exported. To use it, simple wrap with it the components/elements which you want to be animated. By default the initial render is not animated, but this can be changed with a prop.
+
+Every element wrapped with a `<AnimateInOut />` **must** have a unique key prop.
+
+Example:
+
+```javascript
+import { AnimateInOut } from 'react-easy-flip`
+
+const SomeReactComponent = () => {
+  return (
+      <AnimateInOut>
+        <div key="flipped-1" />
+        <div key="flipped-2" />
+        <div key="flipped-3" />
+      </AnimateInOut>
+  )
+}
+```
+
+Here are all props that you can pass to `<AnimateInOut />`:
+
+|      Property       |   Default   | Required |         Type         |                            Details                             |
+| :-----------------: | :---------: | :------: | :------------------: | :------------------------------------------------------------: |
+|        `in`         |  `fadeIn`   | `false`  | `AnimationKeyframes` |                    Mount animation options                     |
+|        `out`        |  `fadeOut`  | `false`  | `AnimationKeyframes` |                   Unmount animation options                    |
+| `playOnFirstRender` |   `false`   | `false`  |      `boolean`       |                    Animate on first render                     |
+|    `itemAmount`     | `undefined` | `false`  |       `number`       | An explicit amount of current children (see explanation below) |
+
+What is `itemAmount` for? In most cases this is not needed. But if your element is animated with a shared layout transition (such as moving from one list to another), this means that it doesn't need an unmount animation. In order to avoid two animations being applied to one element, provide the amount. For example, if this is a todo-app-like application, keep the number of both todo and done items. Moving from todo to done doesn't change the total amount of items, but `<AnimateInOut />` does not know that until you tell it. See the recipes below.
 
 ## Comparison with other libraries
 
-Among similar libraries such as [`react-overdrive`](https://github.com/berzniz/react-overdrive), [`react-flip-move`](https://github.com/joshwcomeau/react-flip-move) or [`react-flip-toolkit`](https://github.com/aholachek/react-flip-toolkit) that are based on a [FLIP technique](https://aerotwist.com/blog/flip-your-animations/), this library's capabilities match those of `react-flip-toolkit`.
+- `react-easy-flip` uses Web Animations API (WAAPI) for animations. No other library based on a [FLIP technique](https://aerotwist.com/blog/flip-your-animations/) currently does that.
 
-`react-easy-flip` can animate both position and scale, as well as prevent distortion of children of an animated element when its scale is changed. It also allows you to easily do so-called ["shared element transitions"](https://guides.codepath.com/android/shared-element-activity-transition) (e.g. smoothly translate an element from one page to another). The examples are given below.
+- Similar to existing libraries such as [`react-overdrive`](https://github.com/berzniz/react-overdrive), [`react-flip-move`](https://github.com/joshwcomeau/react-flip-move) or [`react-flip-toolkit`](https://github.com/aholachek/react-flip-toolkit) (although only the latter seems to be maintained).
 
-Additionally, `react-easy-flip` is the **only** FLIP library for React that provides animation via a hook. `react-easy-flip` has the **smallest bundle size**. It does not use React class components and lifecycle methods that are considered unsafe in latest releases of React.
+- Allows you to easily do so-called [shared layout animations](https://guides.codepath.com/android/shared-element-activity-transition) (e.g. smoothly move an element from one page/parent to another). Some examples are given below. This is what heavier libraries like [`framer-motion`](https://github.com/framer/motion) call Magic Motion.
 
-## Examples
+- Additionally, `react-easy-flip` is the **only** lightweight FLIP library for React that provides animation via a hook. Currently `react-easy-flip` has the **smallest bundle size**. It also does not use React class components and lifecycle methods that are considered unsafe in latest releases of React.
 
-The code for the demo above can be found in this repository [here](https://github.com/jlkiri/react-easy-flip/tree/master/demo).
-Below are some simple Codesandbox examples:
+## Recipes
 
-### Translate and scale (with child scale adjustment)
+### List sort/shuffle animation
 
-This examples shows the difference between the same transition done in CSS and with `react-easy-flip`:
+[Go to code](https://github.com/jlkiri/react-easy-flip-demo/blob/master/pages/Shuffle.tsx)
 
-https://codesandbox.io/s/css-vs-js-child-warping-t7f95
+<p align="center">
+  <img src="./assets/simpleshuffle.gif" width='300px' alt='simple shuffle animation' />
+</p>
 
-![Simple](./assets/simple.gif)
+### Both x and y coordinate shuffle
 
-### Shuffle children
+[Go to code](https://github.com/jlkiri/react-easy-flip-demo/blob/master/pages/auto-shuffle.tsx)
 
-This is a good usecase for `useFlipGroup`:
+<p align="center">
+  <img src="./assets/autoshuffle.gif" width='300px' alt='auto shuffle animation' />
+</p>
 
-https://codesandbox.io/s/list-shuffling-flip-hlguz
+### Shared layout animation
 
-![Simple](./assets/shuffle.gif)
+This is an todo-app-like example of shared layout animations. Click on any rectangle to move it to another parent. Note that on every click an item is actually unmounted from DOM and re-mounted in the other position, but having the same `data-flip-id` allows to be smoothly animated from one to another position.
 
-### Shared element transition
+[Go to code](https://github.com/jlkiri/react-easy-flip-demo/blob/master/pages/shared-layout.tsx)
 
-This is an example of so-called shared element transition. Click on any square with the Moon in it. Note that the black background and the Moon are different elements (with different parents) after the click, yet the animation remains smooth despite the DOM unmount. This technique is done fairly easiy with `useSimpleFlip` and can even be used to animate elements across pages in SPA.
+<p align="center">
+  <img src="./assets/sharedlayout.gif" width='400px' alt='shared layout  animation' />
+</p>
 
-https://codesandbox.io/s/shared-element-transition-flip-9orsy
+### In/out (mount/unmount) animation (opacity)
 
-![Shared](./assets/sharedtransition.gif)
+The fade in and out keyframes are default and work out of box (= you do not need to explicitly pass them).
 
-## Tips
+[Go to code](https://github.com/jlkiri/react-easy-flip-demo/blob/master/pages/in-out.tsx)
 
-- You may need to think about how you structure your HTML before you try to "customize" animations with your own CSS (it will probably not work)
-- `useFlipGroup` is best used with a `transitionend` callback: disable animation-triggering actions until animation is finished to prevent possible layout problems
-- It is possible to use more than one instance of each hooks within one React component but make sure to:
-  a) Keep `id`s unique
-  b) Avoid making one `id` a target for more than one animation
+<p align="center">
+  <img src="./assets/inout.gif" width='300px' alt='shared layout  animation' />
+</p>
+
+### In/out (mount/unmount) animation (translation)
+
+An example of passing custom animation options to `<AnimateInOut>`. Here the images are moved in and out instead of simply fading in and out.
+
+[Go to code](https://github.com/jlkiri/react-easy-flip-demo/blob/master/pages/in-out-pic.tsx)
+
+<p align="center">
+  <img src="./assets/inoutpic2.gif" width='400px' alt='shared layout  animation' />
+</p>
 
 ## Requirements
 
 This library requires React version 16.8.0 or higher (the one with Hooks).
 
-## Done in 3.0
+## Contribution
 
-- [x] Full Typescript support
-- [x] Add support for animating scale and shared element transitions
-- [x] Add comprehensive examples
-- [x] Add tests
+Any kind of contribution is welcome!
+
+1. Open an issue or pick an existing one that you want to work on
+2. Fork this repository
+3. Clone your fork to work on it locally
+4. Make changes
+5. Run `yarn build` and make sure that it builds without crash
