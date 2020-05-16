@@ -1,4 +1,5 @@
-![minzipped](https://badgen.net/bundlephobia/minzip/react-easy-flip@3.0.0)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/react-easy-flip@beta)
+![npm (tag)](https://img.shields.io/npm/v/react-easy-flip/beta)
 
 <p align="center">
   <img src="./assets/logo.gif" width='500px' alt='react-easy-flip animation logo' />
@@ -23,6 +24,10 @@
 * Built-in easing functions
 
 - Super lightweight
+
+## Previos version README
+
+This is a README for 4.0.0-beta. The v3 README can be found [here](./README-v3.md).
 
 ## Demo
 

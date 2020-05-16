@@ -1,7 +1,7 @@
 {
   "name": "react-easy-flip",
   "version": "4.0.0-beta.0",
-  "description": "A small React library for smooth FLIP animations",
+  "description": "A lightweight React library for smooth FLIP animations",
   "source": "src/index.ts",
   "types": "lib/index.d.ts",
   "main": "lib/index.js",
