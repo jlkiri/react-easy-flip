@@ -27,22 +27,13 @@ export interface AnimationOptions {
   duration?: number
   easing?: (x: number) => number
   delay?: number
+  animateColor?: boolean
 }
 
 export interface FlipHtmlElement extends Element {
   dataset: {
     flipId: FlipID
-    preserveScale: boolean
   }
-}
-
-type TransformValues = {
-  translateX: number
-  translateY: number
-  scaleX: number
-  scaleY: number
-  bgColor: string
-  prevBgColor: string
 }
 
 type Transforms = Map<
@@ -56,7 +47,7 @@ type Transforms = Map<
 export const useFlip = (
   rootId: string,
   options: AnimationOptions = {},
-  deps: any
+  deps?: any
 ) => {
   const {
     cachedAnimations,
@@ -69,7 +60,8 @@ export const useFlip = (
   const {
     delay = DEFAULT_DELAY,
     duration = DEFAULT_DURATION,
-    easing = DEFAULT_EASING
+    easing = DEFAULT_EASING,
+    animateColor = false
   } = options
 
   // If render happened during animation, do not wait for useLayoutEffect
@@ -173,8 +165,10 @@ export const useFlip = (
             calculateInverse: true
           })
 
-          kfs.animations[0].background = styles.bgColor
-          kfs.animations[20].background = nextColor
+          if (animateColor) {
+            kfs.animations[0].background = styles.bgColor
+            kfs.animations[20].background = nextColor
+          }
 
           transforms.set(flipId, {
             elm: flipElement,
@@ -193,8 +187,6 @@ export const useFlip = (
       delay: delay,
       fill: 'both' as 'both'
     }
-
-    // const entries = transforms.entries()
 
     for (const flipId of cachedStyles.keys()) {
       syncLayout.render(() => {
