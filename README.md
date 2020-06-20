@@ -121,7 +121,7 @@ const SomeReactComponent = () => {
 
 ### Exported easings
 
-`react-easy-flip` exports ready-to-use easing functions.
+`react-easy-flip` exports ready-to-use easing functions. You can [see the examples here](https://easings.net/).
 
 - linear
 - easeInSine
