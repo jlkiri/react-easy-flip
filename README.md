@@ -35,6 +35,8 @@ https://react-easy-flip-demo.now.sh/
 
 Repository: [react-easy-flip-demo](https://github.com/jlkiri/react-easy-flip-demo)
 
+You can also [read about how it works in detail here](https://css-tricks.com/everything-you-need-to-know-about-flip-animations-in-react/).
+
 ## Install
 
 `npm install react-easy-flip@beta`
