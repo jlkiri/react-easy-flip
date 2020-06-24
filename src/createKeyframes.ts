@@ -41,6 +41,8 @@ export const createKeyframes = ({
     !cachedV && cachedEasings.set(nStep, easedStep)
 
     // Calculate the scale of the element.
+    // easedStep grows from 0 to 1 according to the easing function.
+    // To prevent changes when the scale value is 1 we substract it from 1 so that the multiplier is always 0
     const scaleX = sx + (1 - sx) * easedStep
     const scaleY = sy + (1 - sy) * easedStep
     const translateX = dx - dx * easedStep
