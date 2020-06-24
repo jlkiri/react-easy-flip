@@ -252,4 +252,4 @@ Any kind of contribution is welcome!
 2. Fork this repository
 3. Clone your fork to work on it locally
 4. Make changes
-5. Run `yarn build` and make sure that it builds without crash
+5. Run `yarn build:dev` and make sure that it builds without crash
