@@ -7,7 +7,8 @@
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "scripts": {
-    "build": "microbundle -f es,cjs --jsx React.createElement",
+    "build": "microbundle -f es,cjs --jsx React.createElement --no-sourcemap",
+    "build:dev": "microbundle -f es,cjs --jsx React.createElement",
     "prepare": "yarn build",
     "format": "prettier --write src/**.ts src/*.ts",
     "lint": "eslint src/",
