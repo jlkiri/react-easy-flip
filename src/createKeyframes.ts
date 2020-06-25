@@ -12,6 +12,77 @@ type CreateKeyframes = {
 let cachedEasings = new Map()
 let cachedLoops = new Map()
 
+const DELTA_THRESHOLD = 3
+
+export const createSpringAnimation = ({
+  sx = 1,
+  sy = 1,
+  dx = 0,
+  dy = 0,
+  stiffness = 300,
+  damping = 10,
+  mass = 1
+}) => {
+  let springLength = 1
+
+  let x = dx
+
+  let v = 0
+
+  let k = -stiffness
+  let d = -damping
+
+  let animations = []
+  let values = []
+
+  let frames = 0
+
+  let currSum = 0
+  let avgX = 0
+  let lastShifted = 0
+
+  console.log('period', 2 * Math.PI * Math.sqrt(mass / stiffness))
+
+  for (let step = 0; step <= 1000; step += 1) {
+    let Fspring = k * (x - springLength)
+    let Fdamping = d * v
+
+    let a = (Fspring + Fdamping) / mass
+
+    v += (a * 1) / 30
+
+    x += (v * 1) / 30
+
+    values.push(x)
+
+    animations.push({
+      transform: `translateX(${x}px)`
+    })
+
+    currSum = currSum + Math.abs(x)
+
+    if (values.length > 60) {
+      currSum = currSum - values[lastShifted]
+      lastShifted++
+    }
+
+    avgX = currSum / animations.length
+
+    if (values.length > 60 && avgX <= DELTA_THRESHOLD) {
+      console.log('avg', avgX)
+      console.log(`stopped at step ${step}`)
+      frames = step
+      break
+    }
+  }
+
+  if (frames == 0) {
+    frames = 1000
+  }
+
+  return { animations, frames }
+}
+
 export const createKeyframes = ({
   sx = 1,
   sy = 1,

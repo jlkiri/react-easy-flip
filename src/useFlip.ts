@@ -16,7 +16,7 @@ import {
   createAnimation
 } from './helpers'
 import { DEFAULT_DURATION, DEFAULT_DELAY, DEFAULT_EASING } from './const'
-import { createKeyframes } from './createKeyframes'
+import { createKeyframes, createSpringAnimation } from './createKeyframes'
 import { syncLayout, useSyncLayout } from './syncLayout'
 
 export { FlipProvider, FlipContext }
@@ -41,6 +41,7 @@ type Transforms = Map<
   {
     elm: FlipHtmlElement
     kfs: any
+    duration: number
   }
 >
 
@@ -156,23 +157,17 @@ export const useFlip = (
             return
           }
 
-          const kfs = createKeyframes({
+          const kfs = createSpringAnimation({
             sx: scaleX,
             sy: scaleY,
             dx: translateX,
-            dy: translateY,
-            easeFn: easing,
-            calculateInverse: true
+            dy: translateY
           })
-
-          if (animateColor) {
-            kfs.animations[0].background = styles.bgColor
-            kfs.animations[20].background = nextColor
-          }
 
           transforms.set(flipId, {
             elm: flipElement,
-            kfs: kfs.animations
+            kfs: kfs.animations,
+            duration: (kfs.frames / 60) * 1000 * 2
           })
 
           // Cache the color value
@@ -194,11 +189,10 @@ export const useFlip = (
 
         if (!transform) return
 
-        const animation = createAnimation(
-          transform.elm,
-          transform.kfs,
-          animationOptions
-        )
+        const animation = createAnimation(transform.elm, transform.kfs, {
+          ...animationOptions,
+          duration: transform.duration
+        })
 
         cachedAnimations.set(flipId, animation)
         transforms.delete(flipId)
