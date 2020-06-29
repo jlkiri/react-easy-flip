@@ -1,5 +1,5 @@
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/react-easy-flip@beta)
-![npm (tag)](https://img.shields.io/npm/v/react-easy-flip/beta)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/react-easy-flip)
+![npm (tag)](https://img.shields.io/npm/v/react-easy-flip/)
 
 <p align="center">
   <img src="./assets/logo.gif" width='500px' alt='react-easy-flip animation logo' />
@@ -27,7 +27,7 @@
 
 ## Previous README versions
 
-This is a README for 4.0.0-beta. The v3 README can be found [here](./README-v3.md).
+This is a README for v4. The v3 README can be found [here](./README-v3.md).
 
 ## Demo
 
