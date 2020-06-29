@@ -1,5 +1,5 @@
 ![npm bundle size](https://img.shields.io/bundlephobia/minzip/react-easy-flip)
-![npm (tag)](https://img.shields.io/npm/v/react-easy-flip/)
+![npm (tag)](https://img.shields.io/npm/v/react-easy-flip)
 
 <p align="center">
   <img src="./assets/logo.gif" width='500px' alt='react-easy-flip animation logo' />
