@@ -5,19 +5,19 @@ type CreateKeyframes = {
   sy: number
   dx?: number
   dy?: number
-  easeFn: (x: number) => number
   calculateInverse?: boolean
 }
 
 let cachedEasings = new Map()
 let cachedLoops = new Map()
 
+const easeFn = (x: number) => x
+
 export const createKeyframes = ({
   sx = 1,
   sy = 1,
   dx = 0,
   dy = 0,
-  easeFn,
   calculateInverse = false
 }: CreateKeyframes) => {
   const cacheKey = `${Math.round(sx)}${Math.round(sy)}${Math.round(

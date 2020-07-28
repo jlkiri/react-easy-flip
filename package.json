@@ -7,8 +7,8 @@
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "scripts": {
-    "build": "microbundle -f es,cjs --jsx React.createElement --no-sourcemap",
-    "build:dev": "microbundle -f es,cjs --jsx React.createElement",
+    "build": "microbundle -f modern --jsx React.createElement --no-sourcemap",
+    "build:dev": "microbundle -f modern --jsx React.createElement",
     "prepare": "yarn build",
     "format": "prettier --write src/**.ts src/*.ts",
     "lint": "eslint src/",
@@ -36,8 +36,6 @@
     "react": ">= 16.8.0"
   },
   "devDependencies": {
-    "@testing-library/react-hooks": "^3.1.1",
-    "@types/jest": "^24.9.0",
     "@types/node": "^12.12.5",
     "@types/react": "^16.9.11",
     "@types/react-dom": "^16.9.3",
@@ -46,14 +44,11 @@
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-react": "^7.16.0",
     "eslint-plugin-react-hooks": "^2.2.0",
-    "jest": "^24.9.0",
     "microbundle": "^0.12.0",
     "prettier": "^1.19.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.2.0",
-    "react-test-renderer": "^16.11.0",
-    "ts-jest": "^24.3.0",
     "typescript": "^3.7.5"
   },
   "files": [

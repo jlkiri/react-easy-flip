@@ -25,7 +25,6 @@ export type FlipID = string
 
 export interface AnimationOptions {
   duration?: number
-  easing?: (x: number) => number
   delay?: number
   animateColor?: boolean
 }
@@ -60,7 +59,6 @@ export const useFlip = (
   const {
     delay = DEFAULT_DELAY,
     duration = DEFAULT_DURATION,
-    easing = DEFAULT_EASING,
     animateColor = false
   } = options
 
@@ -161,7 +159,6 @@ export const useFlip = (
             sy: scaleY,
             dx: translateX,
             dy: translateY,
-            easeFn: easing,
             calculateInverse: true
           })
 
