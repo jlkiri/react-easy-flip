@@ -2,12 +2,9 @@ import * as React from 'react'
 import { useLayoutEffect } from './useLayoutEffect'
 import { FlipProvider, FlipContext } from './FlipProvider'
 import {
-  isRunning,
   getElementByFlipId,
   emptyMap,
-  not,
   getElementsByRootId,
-  getComputedBgColor,
   getTranslateY,
   getTranslateX,
   getScaleX,
@@ -25,9 +22,7 @@ export type FlipID = string
 
 export interface AnimationOptions {
   duration?: number
-  easing?: (x: number) => number
   delay?: number
-  animateColor?: boolean
 }
 
 export interface FlipHtmlElement extends Element {
@@ -57,11 +52,7 @@ export const useFlip = (
   } = React.useContext(FlipContext)
   const transforms = React.useRef<Transforms>(new Map()).current
 
-  const {
-    delay = DEFAULT_DELAY,
-    duration = DEFAULT_DURATION,
-    animateColor = false
-  } = options
+  const { delay = DEFAULT_DELAY, duration = DEFAULT_DURATION } = options
 
   // If render happened during animation, do not wait for useLayoutEffect
   // and finish all animations, but cache their midflight position for next animation.
@@ -109,8 +100,6 @@ export const useFlip = (
 
           // Update the cached position
           cachedStyles.set(flipId, nextRect)
-
-          const nextColor = getComputedBgColor(flipElement)
 
           // Do not animate if there is no need to
           if (
