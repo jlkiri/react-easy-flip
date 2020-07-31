@@ -1,5 +1,14 @@
 import * as React from 'react'
-import { isPaused, isRunning } from './helpers'
+import {
+  emptyMap,
+  getComputedBgColor,
+  getElementByFlipId,
+  getRect,
+  isPaused,
+  isRunning,
+  not
+} from './helpers'
+import { syncLayout } from './syncLayout'
 
 export type Rect = DOMRect | ClientRect
 
@@ -27,6 +36,46 @@ export const FlipContext = React.createContext<FlipContext>({
   cachedStyles: new Map(),
   childKeyCache: new Map()
 })
+
+export class SnapshotCapturer extends React.Component {
+  static contextType = FlipContext
+
+  getSnapshotBeforeUpdate() {
+    console.debug('getSnapshotBeforeUpdate')
+    const { cachedStyles, cachedAnimations } = this.context
+
+    for (const flipId of cachedStyles.keys()) {
+      const element = getElementByFlipId(flipId)
+
+      if (not(emptyMap(cachedAnimations)) && element) {
+        const cachedAnimation = cachedAnimations.get(flipId)
+
+        if (cachedAnimation && isRunning(cachedAnimation)) {
+          const v = cachedStyles.get(flipId)
+          if (v) {
+            syncLayout.prewrite(() => {
+              cachedStyles.set(flipId, {
+                rect: getRect(element),
+                styles: {
+                  bgColor: getComputedBgColor(getElementByFlipId(flipId))
+                }
+              })
+            })
+            syncLayout.render(() => {
+              cachedAnimation.finish()
+            })
+          }
+        }
+      }
+    }
+
+    syncLayout.flush()
+  }
+
+  render() {
+    return this.props.children
+  }
+}
 
 export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
   const [forcedRenders, setForcedRenders] = React.useState(0)
@@ -59,5 +108,9 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [forcedRenders, childKeyCache, cachedStyles, cachedAnimations])
 
-  return <FlipContext.Provider value={ctx}>{children}</FlipContext.Provider>
+  return (
+    <FlipContext.Provider value={ctx}>
+      <SnapshotCapturer>{children}</SnapshotCapturer>
+    </FlipContext.Provider>
+  )
 }

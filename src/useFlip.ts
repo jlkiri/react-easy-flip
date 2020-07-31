@@ -67,32 +67,6 @@ export const useFlip = (
   // If render happened during animation, do not wait for useLayoutEffect
   // and finish all animations, but cache their midflight position for next animation.
   // getBoundingClientRect will return correct values only here and not in useLayoutEffect!
-  for (const flipId of cachedStyles.keys()) {
-    const element = getElementByFlipId(flipId)
-
-    if (not(emptyMap(cachedAnimations)) && element) {
-      const cachedAnimation = cachedAnimations.get(flipId)
-
-      if (cachedAnimation && isRunning(cachedAnimation)) {
-        const v = cachedStyles.get(flipId)
-        if (v) {
-          syncLayout.prewrite(() => {
-            cachedStyles.set(flipId, {
-              rect: getRect(element),
-              styles: {
-                bgColor: getComputedBgColor(getElementByFlipId(flipId))
-              }
-            })
-          })
-          syncLayout.render(() => {
-            cachedAnimation.finish()
-          })
-        }
-      }
-    }
-  }
-
-  syncLayout.flush()
 
   React.useEffect(() => {
     // Cache element positions on initial render for subsequent calculations
