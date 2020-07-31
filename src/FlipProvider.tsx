@@ -12,10 +12,7 @@ import { syncLayout } from './syncLayout'
 
 export type Rect = DOMRect | ClientRect
 
-export type CachedStyles = Map<
-  string,
-  { styles: { bgColor: string }; rect: Rect }
->
+export type CachedRects = Map<string, Rect>
 export type Animations = Map<string, Animation>
 export type ChildKeyCache = Map<string, React.ReactElement>
 
@@ -24,7 +21,7 @@ interface FlipContext {
   pauseAll: () => void
   resumeAll: () => void
   cachedAnimations: Animations
-  cachedStyles: CachedStyles
+  cachedStyles: CachedRects
   childKeyCache: ChildKeyCache
 }
 
@@ -80,7 +77,7 @@ export class SnapshotCapturer extends React.Component {
 export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
   const [forcedRenders, setForcedRenders] = React.useState(0)
   const cachedAnimations = React.useRef<Animations>(new Map()).current
-  const cachedStyles = React.useRef<CachedStyles>(new Map()).current
+  const cachedStyles = React.useRef<CachedRects>(new Map()).current
   const childKeyCache = React.useRef(new Map()).current
 
   const ctx = React.useMemo(() => {

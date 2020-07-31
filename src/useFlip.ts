@@ -76,12 +76,7 @@ export const useFlip = (
       for (const element of flippableElements) {
         const { flipId } = (element as FlipHtmlElement).dataset
 
-        cachedStyles.set(flipId, {
-          styles: {
-            bgColor: getComputedBgColor(element)
-          },
-          rect: getRect(element)
-        })
+        cachedStyles.set(flipId, getRect(element))
       }
     }
   }, [rootId, deps, cachedStyles])
@@ -92,9 +87,7 @@ export const useFlip = (
 
     const cachedStyleEntries = cachedStyles.entries()
 
-    for (const [flipId, value] of cachedStyleEntries) {
-      const { rect: cachedRect, styles } = value
-
+    for (const [flipId, cachedRect] of cachedStyleEntries) {
       // Select by data-flip-id which makes it possible to animate the element
       // that re-mounted in some other DOM location (i.e. shared layout transition)
       const flipElement = getElementByFlipId(flipId)
@@ -115,7 +108,7 @@ export const useFlip = (
           const scaleY = getScaleY(cachedRect, nextRect)
 
           // Update the cached position
-          cachedStyles.get(flipId)!.rect = nextRect
+          cachedStyles.set(flipId, nextRect)
 
           const nextColor = getComputedBgColor(flipElement)
 
@@ -137,18 +130,10 @@ export const useFlip = (
             calculateInverse: true
           })
 
-          if (animateColor) {
-            kfs.animations[0].background = styles.bgColor
-            kfs.animations[20].background = nextColor
-          }
-
           transforms.set(flipId, {
             elm: flipElement,
             kfs: kfs.animations
           })
-
-          // Cache the color value
-          styles.bgColor = nextColor
         })
       }
     }
