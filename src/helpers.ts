@@ -29,9 +29,6 @@ export const getRect = (element: Element) => element.getBoundingClientRect()
 
 export const getFlipId = (el: Element & FlipHtmlElement) => el.dataset.flipId
 
-export const getComputedBgColor = (element: Element) =>
-  getComputedStyle(element).getPropertyValue('background-color')
-
 export const getElementByFlipId = (flipId: FlipID) =>
   document.querySelector(`[data-flip-id=${flipId}]`) as FlipHtmlElement
 

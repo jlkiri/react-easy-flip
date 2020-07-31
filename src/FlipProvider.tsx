@@ -1,7 +1,6 @@
 import * as React from 'react'
 import {
   emptyMap,
-  getComputedBgColor,
   getElementByFlipId,
   getRect,
   isPaused,
@@ -14,7 +13,6 @@ export type Rect = DOMRect | ClientRect
 
 export type CachedRects = Map<string, Rect>
 export type Animations = Map<string, Animation>
-export type ChildKeyCache = Map<string, React.ReactElement>
 
 interface FlipContext {
   forceRender: () => void
@@ -22,7 +20,6 @@ interface FlipContext {
   resumeAll: () => void
   cachedAnimations: Animations
   cachedStyles: CachedRects
-  childKeyCache: ChildKeyCache
 }
 
 export const FlipContext = React.createContext<FlipContext>({
@@ -30,8 +27,7 @@ export const FlipContext = React.createContext<FlipContext>({
   pauseAll: () => {},
   resumeAll: () => {},
   cachedAnimations: new Map(),
-  cachedStyles: new Map(),
-  childKeyCache: new Map()
+  cachedStyles: new Map()
 })
 
 export class SnapshotCapturer extends React.Component {
@@ -51,12 +47,7 @@ export class SnapshotCapturer extends React.Component {
           const v = cachedStyles.get(flipId)
           if (v) {
             syncLayout.prewrite(() => {
-              cachedStyles.set(flipId, {
-                rect: getRect(element),
-                styles: {
-                  bgColor: getComputedBgColor(getElementByFlipId(flipId))
-                }
-              })
+              cachedStyles.set(flipId, getRect(element))
             })
             syncLayout.render(() => {
               cachedAnimation.finish()
@@ -78,7 +69,6 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
   const [forcedRenders, setForcedRenders] = React.useState(0)
   const cachedAnimations = React.useRef<Animations>(new Map()).current
   const cachedStyles = React.useRef<CachedRects>(new Map()).current
-  const childKeyCache = React.useRef(new Map()).current
 
   const ctx = React.useMemo(() => {
     return {
@@ -100,10 +90,9 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
         }
       },
       cachedAnimations,
-      cachedStyles,
-      childKeyCache
+      cachedStyles
     }
-  }, [forcedRenders, childKeyCache, cachedStyles, cachedAnimations])
+  }, [forcedRenders, cachedStyles, cachedAnimations])
 
   return (
     <FlipContext.Provider value={ctx}>
