@@ -10,11 +10,10 @@
     "build": "microbundle -f es,cjs --jsx React.createElement --no-sourcemap",
     "build:dev": "microbundle -f es,cjs --jsx React.createElement",
     "prepare": "yarn build",
-    "format": "prettier --write src/**.ts src/*.ts",
-    "lint": "eslint src/",
-    "lint:fix": "eslint --fix src/",
-    "develop": "yarn start",
-    "test": "jest src/"
+    "format": "prettier --write src/**/*.{ts,tsx,js,jsx}",
+    "lint": "eslint src/ --ext .js,.ts,.tsx,.jsx",
+    "lint:fix": "eslint --fix src/ --ext .js,.ts,.tsx,.jsx",
+    "develop": "yarn start"
   },
   "repository": {
     "type": "git",
@@ -33,7 +32,8 @@
   },
   "homepage": "https://github.com/jlkiri/react-easy-flip#readme",
   "peerDependencies": {
-    "react": ">= 16.8.0"
+    "react": ">= 16.8.0",
+    "react-dom": ">= 16.8.0"
   },
   "devDependencies": {
     "@testing-library/react-hooks": "^3.1.1",
