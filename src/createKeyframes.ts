@@ -5,7 +5,6 @@ type CreateKeyframes = {
   sy: number
   dx?: number
   dy?: number
-  easeFn: (x: number) => number
   calculateInverse?: boolean
 }
 
@@ -17,7 +16,6 @@ export const createKeyframes = ({
   sy = 1,
   dx = 0,
   dy = 0,
-  easeFn,
   calculateInverse = false
 }: CreateKeyframes) => {
   const cacheKey = `${Math.round(sx)}${Math.round(sy)}${Math.round(
@@ -36,7 +34,7 @@ export const createKeyframes = ({
     // Remap the step value to an eased one.
     const nStep = step / 100
     const cachedV = cachedEasings.get(nStep)
-    const easedStep = cachedV ? cachedV : easeFn(nStep)
+    const easedStep = cachedV ? cachedV : nStep
 
     !cachedV && cachedEasings.set(nStep, easedStep)
 

@@ -15,7 +15,7 @@ import {
   getRect,
   createAnimation
 } from './helpers'
-import { DEFAULT_DURATION, DEFAULT_DELAY, DEFAULT_EASING } from './const'
+import { DEFAULT_DURATION, DEFAULT_DELAY } from './const'
 import { createKeyframes } from './createKeyframes'
 import { syncLayout, useSyncLayout } from './syncLayout'
 
@@ -60,7 +60,6 @@ export const useFlip = (
   const {
     delay = DEFAULT_DELAY,
     duration = DEFAULT_DURATION,
-    easing = DEFAULT_EASING,
     animateColor = false
   } = options
 
@@ -135,7 +134,6 @@ export const useFlip = (
             sy: scaleY,
             dx: translateX,
             dy: translateY,
-            easeFn: easing,
             calculateInverse: true
           })
 
