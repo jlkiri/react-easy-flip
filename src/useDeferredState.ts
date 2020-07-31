@@ -13,8 +13,8 @@ export const useDeferredState = ({
 }: any) => {
   const [variant, setVariant] = React.useState(initial)
   const [isRendered, setIsRendered] = React.useState(initial === 'visible')
-  const didRender = React.useRef(false)
   const { cachedAnimations } = React.useContext(FlipContext)
+  const didRender = React.useRef(false)
 
   const shouldAnimateFirstRender = () =>
     !didRender.current && animateFirstRender
@@ -37,16 +37,12 @@ export const useDeferredState = ({
   }
 
   const handleExitAnimationEnd = () => {
-    console.log('handler')
     setIsRendered(false)
-  }
-
-  const handleEnterAnimationEnd = () => {
-    console.log('handler')
   }
 
   const animateVisible = (el: any) => {
     const animation = el.animate(variants.visible, 700)
+    cachedAnimations.set(flipId, animation)
   }
 
   React.useLayoutEffect(() => {

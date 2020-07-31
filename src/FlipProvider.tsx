@@ -34,7 +34,7 @@ export class SnapshotCapturer extends React.Component {
   static contextType = FlipContext
 
   getSnapshotBeforeUpdate() {
-    console.debug('getSnapshotBeforeUpdate')
+    console.log('getSnapshotBeforeUpdate')
     const { cachedStyles, cachedAnimations } = this.context
 
     for (const flipId of cachedStyles.keys()) {
