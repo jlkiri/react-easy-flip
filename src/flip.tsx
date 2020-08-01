@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { FlipProvider, useFlip } from './useFlip'
 
 type SnapshotProps = {
   getBoundingRectSnapshot: () => void
@@ -21,12 +22,16 @@ class Snapshot extends React.Component<SnapshotProps> {
 const cache = new Map()
 
 const get = (_target: object, type: string) => {
-  const Component = (forwardedProps: object, ref: React.Ref<HTMLElement>) => {
+  const Component = (
+    forwardedProps: object & { flipId: string },
+    ref: React.Ref<HTMLElement>
+  ) => {
     const localRef = React.useRef<HTMLElement>()
 
     const component = React.createElement(type, {
       ...forwardedProps,
-      ref: localRef
+      ref: localRef,
+      'data-flip-id': forwardedProps.flipId
     })
 
     const getBoundingRectSnapshot = () => {
@@ -38,6 +43,8 @@ const get = (_target: object, type: string) => {
 
     // Makes the local ref usable inside a user-defined parent
     React.useImperativeHandle(ref, () => localRef.current!)
+
+    useFlip(forwardedProps.flipId)
 
     return (
       <Snapshot getBoundingRectSnapshot={getBoundingRectSnapshot}>
@@ -52,7 +59,7 @@ const get = (_target: object, type: string) => {
     const cachedComponent = React.forwardRef(Component)
     cache.set(type, cachedComponent)
 
-    return cachedComponent
+    return <FlipProvider>{cachedComponent}</FlipProvider>
   }
 
   return cache.get(type)

@@ -94,9 +94,5 @@ export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [forcedRenders, cachedStyles, cachedAnimations])
 
-  return (
-    <FlipContext.Provider value={ctx}>
-      <SnapshotCapturer>{children}</SnapshotCapturer>
-    </FlipContext.Provider>
-  )
+  return <FlipContext.Provider value={ctx}>{children}</FlipContext.Provider>
 }

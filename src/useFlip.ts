@@ -39,11 +39,7 @@ type Transforms = Map<
   }
 >
 
-export const useFlip = (
-  rootId: string,
-  options: AnimationOptions = {},
-  deps?: any
-) => {
+export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
   const {
     cachedAnimations,
     cachedStyles,
@@ -60,71 +56,65 @@ export const useFlip = (
 
   React.useEffect(() => {
     // Cache element positions on initial render for subsequent calculations
-    for (const root of getElementsByRootId(rootId)) {
-      // Select all root children that are supposed to be animated
-      const flippableElements = root.querySelectorAll(`[data-flip-id]`)
+    // Select all root children that are supposed to be animated
+    const el = getElementByFlipId(flipId)
 
-      for (const element of flippableElements) {
-        const { flipId } = (element as FlipHtmlElement).dataset
-
-        cachedStyles.set(flipId, getRect(element))
-      }
-    }
-  }, [rootId, deps, cachedStyles])
+    cachedStyles.set(flipId, getRect(el!))
+  }, [flipId, cachedStyles])
 
   useLayoutEffect(() => {
     // Do not do anything on initial render
     if (emptyMap(cachedStyles)) return
 
-    const cachedStyleEntries = cachedStyles.entries()
+    const cachedRect = cachedStyles.get(flipId)
 
-    for (const [flipId, cachedRect] of cachedStyleEntries) {
-      // Select by data-flip-id which makes it possible to animate the element
-      // that re-mounted in some other DOM location (i.e. shared layout transition)
-      const flipElement = getElementByFlipId(flipId)
+    if (!cachedRect) return
 
-      if (flipElement) {
-        syncLayout.read(() => {
-          const nextRect = getRect(flipElement)
+    // Select by data-flip-id which makes it possible to animate the element
+    // that re-mounted in some other DOM location (i.e. shared layout transition)
+    const flipElement = getElementByFlipId(flipId)
 
-          const translateY = getTranslateY(
-            cachedRect as DOMRect,
-            nextRect as DOMRect
-          )
-          const translateX = getTranslateX(
-            cachedRect as DOMRect,
-            nextRect as DOMRect
-          )
-          const scaleX = getScaleX(cachedRect, nextRect)
-          const scaleY = getScaleY(cachedRect, nextRect)
+    if (flipElement) {
+      syncLayout.read(() => {
+        const nextRect = getRect(flipElement)
 
-          // Update the cached position
-          cachedStyles.set(flipId, nextRect)
+        const translateY = getTranslateY(
+          cachedRect as DOMRect,
+          nextRect as DOMRect
+        )
+        const translateX = getTranslateX(
+          cachedRect as DOMRect,
+          nextRect as DOMRect
+        )
+        const scaleX = getScaleX(cachedRect, nextRect)
+        const scaleY = getScaleY(cachedRect, nextRect)
 
-          // Do not animate if there is no need to
-          if (
-            translateX === 0 &&
-            translateY === 0 &&
-            scaleX === 1 &&
-            scaleY === 1
-          ) {
-            return
-          }
+        // Update the cached position
+        cachedStyles.set(flipId, nextRect)
 
-          const kfs = createKeyframes({
-            sx: scaleX,
-            sy: scaleY,
-            dx: translateX,
-            dy: translateY,
-            calculateInverse: true
-          })
+        // Do not animate if there is no need to
+        if (
+          translateX === 0 &&
+          translateY === 0 &&
+          scaleX === 1 &&
+          scaleY === 1
+        ) {
+          return
+        }
 
-          transforms.set(flipId, {
-            elm: flipElement,
-            kfs: kfs.animations
-          })
+        const kfs = createKeyframes({
+          sx: scaleX,
+          sy: scaleY,
+          dx: translateX,
+          dy: translateY,
+          calculateInverse: true
         })
-      }
+
+        transforms.set(flipId, {
+          elm: flipElement,
+          kfs: kfs.animations
+        })
+      })
     }
 
     const animationOptions = {
@@ -134,24 +124,22 @@ export const useFlip = (
       fill: 'both' as 'both'
     }
 
-    for (const flipId of cachedStyles.keys()) {
-      syncLayout.render(() => {
-        const transform = transforms.get(flipId)
+    syncLayout.render(() => {
+      const transform = transforms.get(flipId)
 
-        if (!transform) return
+      if (!transform) return
 
-        const animation = createAnimation(
-          transform.elm,
-          transform.kfs,
-          animationOptions
-        )
+      const animation = createAnimation(
+        transform.elm,
+        transform.kfs,
+        animationOptions
+      )
 
-        cachedAnimations.set(flipId, animation)
-        transforms.delete(flipId)
+      cachedAnimations.set(flipId, animation)
+      transforms.delete(flipId)
 
-        animation.play()
-      })
-    }
+      animation.play()
+    })
   })
 
   useSyncLayout()
