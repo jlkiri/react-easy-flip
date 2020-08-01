@@ -1,17 +1,43 @@
 import * as React from 'react'
-import { FlipProvider, useFlip } from './useFlip'
+import { Rect, useCache } from './FlipProvider'
+import { getElementByFlipId, getRect, isRunning } from './helpers'
+import { syncLayout } from './syncLayout'
+import { useFlip } from './useFlip'
 
 type SnapshotProps = {
   getBoundingRectSnapshot: () => void
+  ctx: ReturnType<typeof useCache>
+  flipId: string
 }
 
 class Snapshot extends React.Component<SnapshotProps> {
-  componentDidUpdate() {}
+  componentDidUpdate(_: any, __: any, snapshot: Rect) {
+    const { cachedAnimation } = this.props.ctx
+
+    if (cachedAnimation.current) {
+      console.debug('snapshot', snapshot)
+      if (isRunning(cachedAnimation.current)) {
+        console.debug('Scheduling forced animation finish')
+        //syncLayout.render(() => {
+        cachedAnimation.current!.finish()
+        //})
+      }
+    }
+
+    //syncLayout.flush()
+  }
 
   getSnapshotBeforeUpdate() {
-    this.props.getBoundingRectSnapshot()
+    console.log('getSnapshotBeforeUpdate')
 
-    return null
+    const element = getElementByFlipId(this.props.flipId)
+    const { cachedRect } = this.props.ctx
+
+    const snapshot = getRect(element)
+
+    cachedRect.current = snapshot
+
+    return snapshot
   }
 
   render() {
@@ -27,6 +53,7 @@ const get = (_target: object, type: string) => {
     ref: React.Ref<HTMLElement>
   ) => {
     const localRef = React.useRef<HTMLElement>()
+    const ctx = useCache()
 
     const component = React.createElement(type, {
       ...forwardedProps,
@@ -47,7 +74,11 @@ const get = (_target: object, type: string) => {
     useFlip(forwardedProps.flipId)
 
     return (
-      <Snapshot getBoundingRectSnapshot={getBoundingRectSnapshot}>
+      <Snapshot
+        flipId={forwardedProps.flipId}
+        ctx={ctx}
+        getBoundingRectSnapshot={getBoundingRectSnapshot}
+      >
         {component}
       </Snapshot>
     )
@@ -59,7 +90,7 @@ const get = (_target: object, type: string) => {
     const cachedComponent = React.forwardRef(Component)
     cache.set(type, cachedComponent)
 
-    return <FlipProvider>{cachedComponent}</FlipProvider>
+    return cachedComponent
   }
 
   return cache.get(type)

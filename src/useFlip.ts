@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useLayoutEffect } from './useLayoutEffect'
-import { FlipProvider, FlipContext } from './FlipProvider'
+import { FlipProvider, FlipContext, useCache } from './FlipProvider'
 import {
   getElementByFlipId,
   emptyMap,
@@ -40,12 +40,7 @@ type Transforms = Map<
 >
 
 export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
-  const {
-    cachedAnimations,
-    cachedStyles,
-    pauseAll,
-    resumeAll
-  } = React.useContext(FlipContext)
+  const { cachedAnimation, cachedRect, pause, resume } = useCache()
   const transforms = React.useRef<Transforms>(new Map()).current
 
   const { delay = DEFAULT_DELAY, duration = DEFAULT_DURATION } = options
@@ -59,16 +54,12 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
     // Select all root children that are supposed to be animated
     const el = getElementByFlipId(flipId)
 
-    cachedStyles.set(flipId, getRect(el!))
-  }, [flipId, cachedStyles])
+    cachedRect.current = getRect(el!)
+  }, [flipId, cachedRect])
 
   useLayoutEffect(() => {
     // Do not do anything on initial render
-    if (emptyMap(cachedStyles)) return
-
-    const cachedRect = cachedStyles.get(flipId)
-
-    if (!cachedRect) return
+    if (!cachedRect.current) return
 
     // Select by data-flip-id which makes it possible to animate the element
     // that re-mounted in some other DOM location (i.e. shared layout transition)
@@ -79,18 +70,18 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
         const nextRect = getRect(flipElement)
 
         const translateY = getTranslateY(
-          cachedRect as DOMRect,
+          cachedRect.current as DOMRect,
           nextRect as DOMRect
         )
         const translateX = getTranslateX(
-          cachedRect as DOMRect,
+          cachedRect.current as DOMRect,
           nextRect as DOMRect
         )
-        const scaleX = getScaleX(cachedRect, nextRect)
-        const scaleY = getScaleY(cachedRect, nextRect)
+        const scaleX = getScaleX(cachedRect.current!, nextRect)
+        const scaleY = getScaleY(cachedRect.current!, nextRect)
 
         // Update the cached position
-        cachedStyles.set(flipId, nextRect)
+        cachedRect.current = nextRect
 
         // Do not animate if there is no need to
         if (
@@ -135,14 +126,14 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
         animationOptions
       )
 
-      cachedAnimations.set(flipId, animation)
+      cachedAnimation.current = animation
       transforms.delete(flipId)
 
       animation.play()
     })
   })
 
-  useSyncLayout()
+  // useSyncLayout()
 
-  return { pause: pauseAll, resume: resumeAll }
+  return { pause, resume }
 }

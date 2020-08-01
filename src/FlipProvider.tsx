@@ -65,6 +65,32 @@ export class SnapshotCapturer extends React.Component {
   }
 }
 
+export const useCache = () => {
+  const [forcedRenders, setForcedRenders] = React.useState(0)
+  const cachedAnimation = React.useRef<Animation>()
+  const cachedRect = React.useRef<Rect>()
+
+  const ctx = {
+    forceRender: () => {
+      setForcedRenders(forcedRenders + 1)
+    },
+    pause: () => {
+      if (cachedAnimation.current && isRunning(cachedAnimation.current)) {
+        cachedAnimation.current.pause()
+      }
+    },
+    resume: () => {
+      if (cachedAnimation.current && isPaused(cachedAnimation.current)) {
+        cachedAnimation.current.play()
+      }
+    },
+    cachedAnimation,
+    cachedRect
+  }
+
+  return ctx
+}
+
 export const FlipProvider = ({ children }: { children: React.ReactNode }) => {
   const [forcedRenders, setForcedRenders] = React.useState(0)
   const cachedAnimations = React.useRef<Animations>(new Map()).current
