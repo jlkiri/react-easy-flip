@@ -1,11 +1,11 @@
 import * as React from 'react'
 
-class Snapshot extends React.Component {
-  listRef = React.createRef()
+type SnapshotProps = {
+  getBoundingRectSnapshot: () => void
+}
 
-  componentDidUpdate() {
-    return true
-  }
+class Snapshot extends React.Component<SnapshotProps> {
+  componentDidUpdate() {}
 
   getSnapshotBeforeUpdate() {
     this.props.getBoundingRectSnapshot()
@@ -20,9 +20,9 @@ class Snapshot extends React.Component {
 
 const cache = new Map()
 
-const get = (_target, type) => {
-  const Component = (forwardedProps, ref) => {
-    const localRef = React.useRef()
+const get = (_target: object, type: string) => {
+  const Component = (forwardedProps: object, ref: React.Ref<HTMLElement>) => {
+    const localRef = React.useRef<HTMLElement>()
 
     const component = React.createElement(type, {
       ...forwardedProps,
@@ -32,11 +32,12 @@ const get = (_target, type) => {
     const getBoundingRectSnapshot = () => {
       console.debug(
         'getBoundingClientRect',
-        localRef.current.getBoundingClientRect()
+        localRef.current!.getBoundingClientRect()
       )
     }
 
-    React.useImperativeHandle(ref, () => localRef.current)
+    // Makes the local ref usable inside a user-defined parent
+    React.useImperativeHandle(ref, () => localRef.current!)
 
     return (
       <Snapshot getBoundingRectSnapshot={getBoundingRectSnapshot}>
@@ -44,6 +45,8 @@ const get = (_target, type) => {
       </Snapshot>
     )
   }
+
+  // Use cache so class component lifecycles work properly
 
   if (!cache.has(type)) {
     const cachedComponent = React.forwardRef(Component)
@@ -55,4 +58,4 @@ const get = (_target, type) => {
   return cache.get(type)
 }
 
-export const flip = new Proxy({}, { get })
+export const flip = new Proxy(Object.create(null), { get })
