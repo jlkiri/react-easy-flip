@@ -6,21 +6,20 @@ env:
   browser: true
   node: true
 plugins:
-  - prettier
   - react
   - react-hooks
 extends:
-  - plugin:prettier/recommended
+  - prettier
+  - prettier/react
   - eslint:recommended
   - plugin:react/recommended
-  - react-app
 rules:
   no-console: warn
   no-eval: error
   prettier/prettier: error
   react-hooks/rules-of-hooks: error
   react-hooks/exhaustive-deps: warn
-  react/prop-types: [2, { ignore: ['children'] }]
+  react/prop-types: off
   react/react-in-jsx-scope: off
 settings:
   react:
