@@ -1,43 +1,28 @@
 import * as React from 'react'
 import { Rect, useCache } from './FlipProvider'
 import { getElementByFlipId, getRect, isRunning } from './helpers'
-import { syncLayout } from './syncLayout'
+import { syncLayout, useSyncLayout } from './syncLayout'
 import { useFlip } from './useFlip'
 
 type SnapshotProps = {
-  getBoundingRectSnapshot: () => void
-  ctx: ReturnType<typeof useCache>
+  getBoundingRectSnapshot: () => Rect | null
+  context: ReturnType<typeof useCache>
   flipId: string
 }
 
+const Layout = () => {
+  useSyncLayout()
+
+  return null
+}
+
 class Snapshot extends React.Component<SnapshotProps> {
-  componentDidUpdate(_: any, __: any, snapshot: Rect) {
-    const { cachedAnimation } = this.props.ctx
-
-    if (cachedAnimation.current) {
-      console.debug('snapshot', snapshot)
-      if (isRunning(cachedAnimation.current)) {
-        console.debug('Scheduling forced animation finish')
-        //syncLayout.render(() => {
-        cachedAnimation.current!.finish()
-        //})
-      }
-    }
-
-    //syncLayout.flush()
-  }
+  componentDidUpdate() {}
 
   getSnapshotBeforeUpdate() {
-    console.log('getSnapshotBeforeUpdate')
+    console.debug('getSnapshotBeforeUpdate')
 
-    const element = getElementByFlipId(this.props.flipId)
-    const { cachedRect } = this.props.ctx
-
-    const snapshot = getRect(element)
-
-    cachedRect.current = snapshot
-
-    return snapshot
+    return this.props.getBoundingRectSnapshot()
   }
 
   render() {
@@ -49,11 +34,11 @@ const cache = new Map()
 
 const get = (_target: object, type: string) => {
   const Component = (
-    forwardedProps: object & { flipId: string },
+    forwardedProps: object & { flipId: string; flip: boolean },
     ref: React.Ref<HTMLElement>
   ) => {
     const localRef = React.useRef<HTMLElement>()
-    const ctx = useCache()
+    const context = useCache()
 
     const component = React.createElement(type, {
       ...forwardedProps,
@@ -62,10 +47,28 @@ const get = (_target: object, type: string) => {
     })
 
     const getBoundingRectSnapshot = () => {
-      console.debug(
-        'getBoundingClientRect',
-        localRef.current!.getBoundingClientRect()
-      )
+      if (!forwardedProps.flipId) return null
+
+      const element = getElementByFlipId(forwardedProps.flipId)
+      const { cachedRect, cachedAnimation } = context
+
+      const snapshot = getRect(element)
+
+      cachedRect.current = snapshot
+
+      console.debug('snapshot', snapshot)
+
+      syncLayout.interrupt(() => {
+        if (cachedAnimation.current) {
+          if (isRunning(cachedAnimation.current)) {
+            console.debug('Animation interrupt')
+
+            cachedAnimation.current!.finish()
+          }
+        }
+      })
+
+      return snapshot
     }
 
     // Makes the local ref usable inside a user-defined parent
@@ -74,13 +77,16 @@ const get = (_target: object, type: string) => {
     useFlip(forwardedProps.flipId)
 
     return (
-      <Snapshot
-        flipId={forwardedProps.flipId}
-        ctx={ctx}
-        getBoundingRectSnapshot={getBoundingRectSnapshot}
-      >
-        {component}
-      </Snapshot>
+      <>
+        <Snapshot
+          flipId={forwardedProps.flipId}
+          context={context}
+          getBoundingRectSnapshot={getBoundingRectSnapshot}
+        >
+          {component}
+        </Snapshot>
+        {forwardedProps.flip && <Layout />}
+      </>
     )
   }
 

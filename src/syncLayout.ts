@@ -2,17 +2,17 @@ import { useLayoutEffect } from './useLayoutEffect'
 
 type Callback = () => void
 
-type LayoutStep = 'prewrite' | 'read' | 'render'
+type LayoutStep = 'interrupt' | 'measure' | 'render'
 
 type CallbackLists = {
-  prewrite: Callback[]
-  read: Callback[]
+  interrupt: Callback[]
+  measure: Callback[]
   render: Callback[]
 }
 
 const jobs: CallbackLists = {
-  prewrite: [],
-  read: [],
+  interrupt: [],
+  measure: [],
   render: []
 }
 
@@ -25,8 +25,8 @@ const flushCallbackList = (jobs: Callback[]) => {
 }
 
 const flushAllJobs = () => {
-  flushCallbackList(jobs.prewrite)
-  flushCallbackList(jobs.read)
+  flushCallbackList(jobs.interrupt)
+  flushCallbackList(jobs.measure)
   flushCallbackList(jobs.render)
 }
 
@@ -39,13 +39,18 @@ const registerSyncCallback = (stepName: LayoutStep) => (
 }
 
 export const syncLayout = {
-  prewrite: registerSyncCallback('prewrite'),
-  read: registerSyncCallback('read'),
+  interrupt: registerSyncCallback('interrupt'),
+  measure: registerSyncCallback('measure'),
   render: registerSyncCallback('render'),
   flush: flushAllJobs,
-  jobLength: () => [jobs.prewrite.length, jobs.read.length, jobs.render.length]
+  jobLength: () => [
+    jobs.interrupt.length,
+    jobs.measure.length,
+    jobs.render.length
+  ]
 }
 
 export function useSyncLayout() {
+  console.debug('useSyncLayout')
   return useLayoutEffect(flushAllJobs)
 }

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useLayoutEffect } from './useLayoutEffect'
-import { FlipProvider, FlipContext, useCache } from './FlipProvider'
+import { FlipContext, useCache } from './FlipProvider'
 import {
   getElementByFlipId,
   emptyMap,
@@ -16,7 +16,7 @@ import { DEFAULT_DURATION, DEFAULT_DELAY } from './const'
 import { createKeyframes } from './createKeyframes'
 import { syncLayout, useSyncLayout } from './syncLayout'
 
-export { FlipProvider, FlipContext }
+export { FlipContext }
 
 export type FlipID = string
 
@@ -54,6 +54,8 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
     // Select all root children that are supposed to be animated
     const el = getElementByFlipId(flipId)
 
+    if (!el) return
+
     cachedRect.current = getRect(el!)
   }, [flipId, cachedRect])
 
@@ -66,7 +68,7 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
     const flipElement = getElementByFlipId(flipId)
 
     if (flipElement) {
-      syncLayout.read(() => {
+      syncLayout.measure(() => {
         const nextRect = getRect(flipElement)
 
         const translateY = getTranslateY(
@@ -132,8 +134,6 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
       animation.play()
     })
   })
-
-  // useSyncLayout()
 
   return { pause, resume }
 }
