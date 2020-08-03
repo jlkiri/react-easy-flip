@@ -25,6 +25,7 @@ const flushCallbackList = (jobs: Callback[]) => {
 }
 
 const flushAllJobs = () => {
+  console.debug('flush')
   flushCallbackList(jobs.interrupt)
   flushCallbackList(jobs.measure)
   flushCallbackList(jobs.render)
@@ -51,6 +52,5 @@ export const syncLayout = {
 }
 
 export function useSyncLayout() {
-  console.debug('useSyncLayout')
   return useLayoutEffect(flushAllJobs)
 }

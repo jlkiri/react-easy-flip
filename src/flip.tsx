@@ -40,6 +40,8 @@ const get = (_target: object, type: string) => {
     const localRef = React.useRef<HTMLElement>()
     const context = useCache()
 
+    useFlip(forwardedProps.flipId)
+
     const component = React.createElement(type, {
       ...forwardedProps,
       ref: localRef,
@@ -59,6 +61,8 @@ const get = (_target: object, type: string) => {
       console.debug('snapshot', snapshot)
 
       syncLayout.interrupt(() => {
+        console.debug('interrupting')
+        console.debug('cachedAnimation', cachedAnimation.current)
         if (cachedAnimation.current) {
           if (isRunning(cachedAnimation.current)) {
             console.debug('Animation interrupt')
@@ -73,8 +77,6 @@ const get = (_target: object, type: string) => {
 
     // Makes the local ref usable inside a user-defined parent
     React.useImperativeHandle(ref, () => localRef.current!)
-
-    useFlip(forwardedProps.flipId)
 
     return (
       <>

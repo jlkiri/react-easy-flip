@@ -31,17 +31,14 @@ export interface FlipHtmlElement extends Element {
   }
 }
 
-type Transforms = Map<
-  FlipID,
-  {
-    elm: FlipHtmlElement
-    kfs: any
-  }
->
+type Transform = {
+  elm: FlipHtmlElement
+  kfs: any
+}
 
 export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
   const { cachedAnimation, cachedRect, pause, resume } = useCache()
-  const transforms = React.useRef<Transforms>(new Map()).current
+  const transform = React.useRef<Transform>()
 
   const { delay = DEFAULT_DELAY, duration = DEFAULT_DURATION } = options
 
@@ -56,8 +53,9 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
 
     if (!el) return
 
-    cachedRect.current = getRect(el!)
-  }, [flipId, cachedRect])
+    console.debug('Initial getRect caching')
+    cachedRect.current = getRect(el)
+  }, [flipId])
 
   useLayoutEffect(() => {
     // Do not do anything on initial render
@@ -68,7 +66,9 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
     const flipElement = getElementByFlipId(flipId)
 
     if (flipElement) {
+      console.debug('Registering measure job')
       syncLayout.measure(() => {
+        console.debug('Measuring')
         const nextRect = getRect(flipElement)
 
         const translateY = getTranslateY(
@@ -103,10 +103,10 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
           calculateInverse: true
         })
 
-        transforms.set(flipId, {
+        transform.current = {
           elm: flipElement,
           kfs: kfs.animations
-        })
+        }
       })
     }
 
@@ -117,19 +117,21 @@ export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
       fill: 'both' as 'both'
     }
 
+    console.debug('Registering render job')
     syncLayout.render(() => {
-      const transform = transforms.get(flipId)
-
-      if (!transform) return
+      if (!transform.current) return
 
       const animation = createAnimation(
-        transform.elm,
-        transform.kfs,
+        transform.current.elm,
+        transform.current.kfs,
         animationOptions
       )
 
+      console.debug('Starting and caching the animation')
+
       cachedAnimation.current = animation
-      transforms.delete(flipId)
+
+      console.log(cachedAnimation.current)
 
       animation.play()
     })
