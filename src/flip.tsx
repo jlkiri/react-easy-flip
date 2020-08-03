@@ -38,7 +38,7 @@ const get = (_target: object, type: string) => {
     ref: React.Ref<HTMLElement>
   ) => {
     const localRef = React.useRef<HTMLElement>()
-    const context = useCache()
+    const context = useCache() // this gets used inside getBoundingRectSnapshot but it is not context, hence undefined animations
 
     useFlip(forwardedProps.flipId)
 
@@ -53,6 +53,11 @@ const get = (_target: object, type: string) => {
 
       const element = getElementByFlipId(forwardedProps.flipId)
       const { cachedRect, cachedAnimation } = context
+
+      console.debug(
+        'getBoundingRectSnapshot cachedAnimation',
+        cachedAnimation.current
+      )
 
       const snapshot = getRect(element)
 
