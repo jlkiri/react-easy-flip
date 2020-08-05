@@ -40,7 +40,7 @@ const get = (_target: object, type: string) => {
     const localRef = React.useRef<HTMLElement>()
     const context = useCache() // this gets used inside getBoundingRectSnapshot but it is not context, hence undefined animations
 
-    useFlip(forwardedProps.flipId)
+    useFlip(forwardedProps.flipId, context)
 
     const component = React.createElement(type, {
       ...forwardedProps,
@@ -82,6 +82,8 @@ const get = (_target: object, type: string) => {
 
     // Makes the local ref usable inside a user-defined parent
     React.useImperativeHandle(ref, () => localRef.current!)
+
+    const Provider = () => {}
 
     return (
       <>

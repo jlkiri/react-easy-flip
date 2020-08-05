@@ -36,11 +36,11 @@ type Transform = {
   kfs: any
 }
 
-export const useFlip = (flipId: string, options: AnimationOptions = {}) => {
-  const { cachedAnimation, cachedRect, pause, resume } = useCache()
+export const useFlip = (flipId: string, context: any) => {
   const transform = React.useRef<Transform>()
+  const { cachedAnimation, cachedRect, pause, resume } = context
 
-  const { delay = DEFAULT_DELAY, duration = DEFAULT_DURATION } = options
+  const { delay = DEFAULT_DELAY, duration = DEFAULT_DURATION } = {}
 
   // If render happened during animation, do not wait for useLayoutEffect
   // and finish all animations, but cache their midflight position for next animation.
