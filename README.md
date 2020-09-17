@@ -139,7 +139,7 @@ const SomeReactComponent = () => {
 - easeOutBack
 - easeInOutBack
 
-### AnimateInOut
+### AnimateInOut (experimental)
 
 While `useFlip` can animate all kinds of position changes, it does not animate mount/unmount animations (e.g. fade in/out). For this purpose the `<AnimateInOut />` component is also exported. To use it, simple wrap with it the components/elements which you want to be animated. By default the initial render is not animated, but this can be changed with a prop.
 
